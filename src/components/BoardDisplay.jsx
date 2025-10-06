@@ -1,4 +1,4 @@
-function Cell({ key, value }) {
+function Cell({ value }) {
   let cellDisplay;
   let cellType;
   if (value === 0) {
@@ -11,19 +11,15 @@ function Cell({ key, value }) {
     cellDisplay = String.fromCharCode(value - 2);
     cellType = "char";
   }
-  return (
-    <div key={key} className={"cell col " + cellType}>
-      {cellDisplay}
-    </div>
-  );
+  return <div className={"cell col " + cellType}>{cellDisplay}</div>;
 }
 
 function BoardDisplay({ board }) {
-  const m_cols = board[0].length;
+  const m_cols = board.boardSize;
   return (
     <>
       <div className="board container text-center">
-        {board.map((row, row_idx) => (
+        {board.cells.map((row, row_idx) => (
           <div className="row" key={row_idx}>
             {row.map((cell, col_idx) => (
               <Cell key={row_idx * m_cols + col_idx} value={cell} />
