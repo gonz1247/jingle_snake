@@ -1,18 +1,32 @@
 import { useState } from "react";
+import Header from "./components/Header";
+import GameInputs from "./components/GameInputs";
+import BoardDisplay from "./components/Board";
 
 function App() {
-  const [count, setCount] = useState(0);
+  // Game Settings
+  const [boardSize, setBoardSize] = useState(10);
+  const [difficulty, setDifficulty] = useState("easy");
+
+  // Populate board with zeros
+  const board = Array(boardSize)
+    .fill(null)
+    .map(() => Array(boardSize).fill(0));
+
+  board[3][5] = 67;
+  board[0][0] = 1;
 
   return (
     <>
-      <div className="d-flex justify-content-center">
-        <h1>Jingle Snake</h1>
-      </div>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
+      <Header>Jingle Snake</Header>
+      <GameInputs
+        boardSize={boardSize}
+        setBoardSize={setBoardSize}
+        difficulty={difficulty}
+        setDifficulty={setDifficulty}
+      />
+      <br></br>
+      <BoardDisplay board={board} />
     </>
   );
 }
