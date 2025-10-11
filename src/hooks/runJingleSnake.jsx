@@ -2,16 +2,17 @@ import { useCallback, useState } from "react";
 import runJingleSnakeBoard from "./runJingleSnakeBoard";
 import useInterval from "./useInterval";
 
+// Used for setting time in ms that interval will use
 const GameSpeed = Object.freeze({
-  Normal: 800,
+  Normal: 200,
   Slow: 400,
-  Pause: 0,
+  Pause: null,
 });
 
 function runJingleSnake(boardSize) {
   // Set up state variables
   const [isPlaying, setIsPlaying] = useState(false);
-  const [gameSpeed, setGameSpeed] = useState(null);
+  const [gameSpeed, setGameSpeed] = useState(GameSpeed.Pause);
   // Intialize board
   const [{ board, snake, direction, row, col }, dispatchBoardState] =
     runJingleSnakeBoard(boardSize);
