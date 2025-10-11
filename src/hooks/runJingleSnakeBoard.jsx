@@ -6,6 +6,11 @@ function boardReducer(state, action) {
   let newState = { ...state };
   switch (action.type) {
     case "start":
+      // Create new board
+      newState.board = new Board(action.newBoardSize);
+      // Add snake at center of board
+      newState.row = Math.floor(action.newBoardSize / 2);
+      newState.col = newState.row;
       newState.snake.grow_at(newState.row, newState.col);
       newState.board.updateCellValue(newState.row, newState.col, 1);
       break;
@@ -50,13 +55,13 @@ function boardReducer(state, action) {
   return newState;
 }
 
-function runJingleSnakeBoard(boardSize) {
+function runJingleSnakeBoard() {
   const [boardState, dispatchBoardState] = useReducer(boardReducer, {
-    board: new Board(boardSize),
+    board: null,
     snake: new Snake(),
     direction: "right",
-    row: Math.floor(boardSize / 2),
-    col: Math.floor(boardSize / 2),
+    row: 0,
+    col: 0,
   });
   return [boardState, dispatchBoardState];
 }

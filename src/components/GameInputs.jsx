@@ -10,7 +10,7 @@ function BoardSize({ boardSize, setBoardSize }) {
         id="boardSize"
         name="boardSize"
         type="number"
-        step="1"
+        step="2"
         value={boardSize}
         onChange={updateBoardSize}
       ></input>
@@ -18,7 +18,7 @@ function BoardSize({ boardSize, setBoardSize }) {
   );
 }
 
-function Difficulty({difficulty, setDifficulty}) {
+function Difficulty({ difficulty, setDifficulty }) {
   const updateDifficulty = (event) => {
     const availSettings = ["easy", "medium", "hard"];
     let newDifficulty = availSettings.includes(event.target.value)
@@ -44,11 +44,22 @@ function Difficulty({difficulty, setDifficulty}) {
   );
 }
 
-function GameInputs({ boardSize, setBoardSize, difficulty, setDifficulty}) {
+function StartGame({ startGame }) {
+  return <button type="button" className="btn btn-primary" onClick={startGame}>Start New Game</button>;
+}
+
+function GameInputs({
+  boardSize,
+  setBoardSize,
+  difficulty,
+  setDifficulty,
+  startGame,
+}) {
   return (
     <div className="d-flex justify-content-evenly">
       <BoardSize boardSize={boardSize} setBoardSize={setBoardSize} />
-      <Difficulty difficulty={difficulty} setDifficulty={setDifficulty}/>
+      <Difficulty difficulty={difficulty} setDifficulty={setDifficulty} />
+      <StartGame startGame={startGame}/>
     </div>
   );
 }

@@ -13,16 +13,17 @@ function runJingleSnake(boardSize) {
   // Set up state variables
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameSpeed, setGameSpeed] = useState(GameSpeed.Pause);
+  
   // Intialize board
   const [{ board, snake, direction, row, col }, dispatchBoardState] =
-    runJingleSnakeBoard(boardSize);
+    runJingleSnakeBoard();
 
   // Initialize game start
   const startGame = useCallback(() => {
     setIsPlaying(true);
+    dispatchBoardState({ type: "start", newBoardSize: boardSize });
     setGameSpeed(GameSpeed.Normal);
-    dispatchBoardState({ type: "start" });
-  }, [dispatchBoardState]);
+  }, [dispatchBoardState, boardSize]);
 
   // Interval for running game
   const gameTick = useCallback(() => {
