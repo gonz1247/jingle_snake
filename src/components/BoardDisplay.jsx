@@ -15,11 +15,11 @@ function Cell({ value }) {
 }
 
 function BoardDisplay({ board }) {
-  const m_cols = board.boardSize;
+  const m_cols = board.length;
   return (
     <>
       <div className="board container text-center">
-        {board.cells.map((row, row_idx) => (
+        {board.map((row, row_idx) => (
           <div className="row" key={row_idx}>
             {row.map((cell, col_idx) => (
               <Cell key={row_idx * m_cols + col_idx} value={cell} />

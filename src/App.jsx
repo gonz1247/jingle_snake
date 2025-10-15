@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Header from "./components/Header";
 import GameInputs from "./components/GameInputs";
-import Board from "./game_objects/Board";
 import BoardDisplay from "./components/BoardDisplay";
 import runJingleSnake from "./hooks/runJingleSnake";
 
@@ -13,12 +12,10 @@ function App() {
   // Actual board that will be used for the game
   const { board, startGame, isPlaying } = runJingleSnake(boardSize);
   // Preview board that can be updated in real time when selecting board size
-  const boardPreview = new Board(boardSize);
-  boardPreview.updateCellValue(
-    Math.floor(boardSize / 2),
-    Math.floor(boardSize / 2),
-    1
-  );
+  const boardPreview = Array(boardSize)
+    .fill(null)
+    .map(() => Array(boardSize).fill(0));
+  boardPreview[Math.floor(boardSize / 2)][Math.floor(boardSize / 2)] = 1;
 
   return (
     <>
