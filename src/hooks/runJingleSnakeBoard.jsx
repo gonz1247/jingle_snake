@@ -37,7 +37,6 @@ function boardReducer(state, action) {
           ? row.map((cell, c_idx) => (c_idx === prev_col ? 0 : cell))
           : row
       );
-      console.log(updatedBoard);
       return {
         ...state,
         board: updatedBoard,
