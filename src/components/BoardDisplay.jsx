@@ -7,6 +7,9 @@ function Cell({ value }) {
   } else if (value === 1) {
     cellDisplay = "";
     cellType = "snake";
+  } else if (value === "#") {
+    cellDisplay = "#";
+    cellType = "char";
   } else {
     cellDisplay = String.fromCharCode(value - 2);
     cellType = "char";

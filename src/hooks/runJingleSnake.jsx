@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import runJingleSnakeBoard from "./runJingleSnakeBoard";
 import { determineEventAtNextCell } from "./runJingleSnakeBoard";
 import useInterval from "./useInterval";
+import { fillBoardWithChars } from "../game_objects/BoardPopulator";
 
 // Used for setting time in ms that interval will use
 const GameSpeed = Object.freeze({
@@ -10,7 +11,7 @@ const GameSpeed = Object.freeze({
   Pause: null,
 });
 
-function runJingleSnake(boardSize) {
+function runJingleSnake(boardSize, fillSpots) {
   // Set up state variables
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameSpeed, setGameSpeed] = useState(GameSpeed.Pause);
@@ -23,10 +24,16 @@ function runJingleSnake(boardSize) {
 
   // Initialize game start
   const startGame = useCallback(() => {
-    setIsPlaying(true);
-    dispatchBoardState({ type: "start", newBoardSize: boardSize });
+    // update board to be right size and have initial characters
+    dispatchBoardState({
+      type: "start",
+      newBoardSize: boardSize,
+      fillSpots: fillSpots,
+    });
+    // Turn game speed to normal and start game
     setGameSpeed(GameSpeed.Normal);
-  }, [boardSize]);
+    setIsPlaying(true);
+  }, [boardSize, fillSpots]);
 
   // Controls what happens on each render of the running game
   const gameTick = useCallback(() => {

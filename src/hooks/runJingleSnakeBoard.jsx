@@ -6,7 +6,18 @@ function boardReducer(state, action) {
       let newBoard = Array(action.newBoardSize)
         .fill(null)
         .map(() => Array(action.newBoardSize).fill(0));
-      // Add snake at center of board
+      // Populate board with random letters
+      for (let i = 0; i < action.fillSpots.length; i++) {
+        let char_row = action.fillSpots[i].row;
+        let char_col = action.fillSpots[i].col;
+        let char = action.fillSpots[i].char;
+        newBoard = newBoard.map((row, r_idx) =>
+          r_idx === char_row
+            ? row.map((cell, c_idx) => (c_idx === char_col ? char : cell))
+            : row
+        );
+      }
+      // Add snake at center of board (this could override a character which is okay for now)
       const newRow = Math.floor(action.newBoardSize / 2);
       const newCol = Math.floor(action.newBoardSize / 2);
       newBoard = newBoard.map((row, r_idx) =>
