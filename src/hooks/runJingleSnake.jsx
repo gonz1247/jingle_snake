@@ -19,7 +19,7 @@ function runJingleSnake(boardSize, fillSpots) {
   const [keyDownHandled, setKeyDownHandled] = useState(false);
 
   // Intialize board
-  const [{ board, snake, row, col }, dispatchBoardState] =
+  const [{ board, snake_head, snake_tail }, dispatchBoardState] =
     runJingleSnakeBoard();
 
   // Initialize game start
@@ -39,8 +39,8 @@ function runJingleSnake(boardSize, fillSpots) {
   const gameTick = useCallback(() => {
     const { next_event, next_row, next_col } = determineEventAtNextCell(
       board,
-      row,
-      col,
+      snake_head.coord[0],
+      snake_head.coord[1],
       moveDirection
     );
     dispatchBoardState({
@@ -49,7 +49,7 @@ function runJingleSnake(boardSize, fillSpots) {
       next_col: next_col,
     });
     setKeyDownHandled(true);
-  }, [board, row, col, moveDirection]);
+  }, [board, snake_head, moveDirection]);
 
   // Interval to create continuous re-rendering
   useInterval(() => {

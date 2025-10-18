@@ -1,4 +1,5 @@
 import { useReducer } from "react";
+import SnakeNode from "../game_objects/Snake";
 
 function boardReducer(state, action) {
   switch (action.type) {
@@ -17,7 +18,7 @@ function boardReducer(state, action) {
             : row
         );
       }
-      // Add snake at center of board (this could override a character which is okay for now)
+      // Add snake marker at center of board (this could override a character which is okay for now)
       const newRow = Math.floor(action.newBoardSize / 2);
       const newCol = Math.floor(action.newBoardSize / 2);
       newBoard = newBoard.map((row, r_idx) =>
@@ -25,34 +26,41 @@ function boardReducer(state, action) {
           ? row.map((cell, c_idx) => (c_idx === newCol ? 1 : cell))
           : row
       );
+      // Create first node of a snake
+      let newNode = new SnakeNode(newRow, newCol);
       return {
         ...state,
         board: newBoard,
-        row: newRow,
-        col: newCol,
+        snake_head: newNode,
+        snake_tail: newNode,
       };
     case "move":
-      // Get previous state
-      let prev_row = state.row;
-      let prev_col = state.col;
+      // Get previous board state
       let updatedBoard = state.board;
-      // Add snake at next spot
+      // Move snake head to next spot on the board
       updatedBoard = updatedBoard.map((row, r_idx) =>
         r_idx === action.next_row
           ? row.map((cell, c_idx) => (c_idx === action.next_col ? 1 : cell))
           : row
       );
-      // Remove snake at previous spot
+      // Remove tail from previous spot on the board
+      let [prev_row, prev_col] = state.snake_tail.coord;
+      // Remove snake tail spot on board
       updatedBoard = updatedBoard.map((row, r_idx) =>
         r_idx === prev_row
           ? row.map((cell, c_idx) => (c_idx === prev_col ? 0 : cell))
           : row
       );
+      // Update snake head and tail
+      let new_head = new SnakeNode(action.next_row, action.next_col);
+      state.snake_head.prev = new_head;
+      let new_tail = state.snake_tail.prev;
+      state.snake_tail.prev = null;
       return {
         ...state,
         board: updatedBoard,
-        row: action.next_row,
-        col: action.next_col,
+        snake_head: new_head,
+        snake_tail: new_tail,
       };
     case "grow":
       // Grow snake at next cell
@@ -106,9 +114,8 @@ export function determineEventAtNextCell(board, curr_row, curr_col, direction) {
 function runJingleSnakeBoard() {
   const [boardState, dispatchBoardState] = useReducer(boardReducer, {
     board: null,
-    snake: null,
-    row: 0,
-    col: 0,
+    snake_head: null,
+    snake_tail: null,
   });
   return [boardState, dispatchBoardState];
 }

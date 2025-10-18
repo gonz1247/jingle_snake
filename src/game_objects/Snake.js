@@ -1,4 +1,4 @@
-class SnakeNode {
+export default class SnakeNode {
   // Reverse link list node
   constructor(row, col) {
     this.coord = [row, col];
@@ -11,13 +11,13 @@ class Snake {
   constructor() {
     this.tail = null;
     this.head = null;
-    this.length = 0
+    this.length = 0;
   }
 
   grow_at(row, col) {
     // Create new node to attach to snake
     const node = new SnakeNode(row, col);
-    this.length += 1
+    this.length += 1;
     // If no tail then this is first element
     if (this.tail === null) {
       this.tail = node;
@@ -55,5 +55,3 @@ class Snake {
     return old_coord;
   }
 }
-
-export default Snake;
