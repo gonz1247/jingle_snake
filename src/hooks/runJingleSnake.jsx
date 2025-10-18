@@ -2,7 +2,6 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import runJingleSnakeBoard from "./runJingleSnakeBoard";
 import { determineEventAtNextCell } from "./runJingleSnakeBoard";
 import useInterval from "./useInterval";
-import { fillBoardWithChars } from "../game_objects/BoardPopulator";
 
 // Used for setting time in ms that interval will use
 const GameSpeed = Object.freeze({
@@ -19,8 +18,7 @@ function runJingleSnake(boardSize, fillSpots) {
   const [keyDownHandled, setKeyDownHandled] = useState(false);
 
   // Intialize board
-  const [{ board, snake_head, snake_tail }, dispatchBoardState] =
-    runJingleSnakeBoard();
+  const [{ board, snake }, dispatchBoardState] = runJingleSnakeBoard();
 
   // Initialize game start
   const startGame = useCallback(() => {
@@ -39,8 +37,8 @@ function runJingleSnake(boardSize, fillSpots) {
   const gameTick = useCallback(() => {
     const { next_event, next_row, next_col } = determineEventAtNextCell(
       board,
-      snake_head.coord[0],
-      snake_head.coord[1],
+      snake[0][0],
+      snake[0][1],
       moveDirection
     );
     dispatchBoardState({
@@ -49,7 +47,7 @@ function runJingleSnake(boardSize, fillSpots) {
       next_col: next_col,
     });
     setKeyDownHandled(true);
-  }, [board, snake_head, moveDirection]);
+  }, [board, snake, moveDirection]);
 
   // Interval to create continuous re-rendering
   useInterval(() => {

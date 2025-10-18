@@ -1,9 +1,9 @@
 import { useReducer } from "react";
-import SnakeNode from "../game_objects/Snake";
 
 function boardReducer(state, action) {
   switch (action.type) {
-    case "start":
+    case "start": {
+      // Initialize empty board
       let newBoard = Array(action.newBoardSize)
         .fill(null)
         .map(() => Array(action.newBoardSize).fill(0));
@@ -12,59 +12,50 @@ function boardReducer(state, action) {
         let char_row = action.fillSpots[i].row;
         let char_col = action.fillSpots[i].col;
         let char = action.fillSpots[i].char;
-        newBoard = newBoard.map((row, r_idx) =>
-          r_idx === char_row
-            ? row.map((cell, c_idx) => (c_idx === char_col ? char : cell))
-            : row
-        );
+        newBoard[char_row][char_col] = char;
       }
       // Add snake marker at center of board (this could override a character which is okay for now)
       const newRow = Math.floor(action.newBoardSize / 2);
       const newCol = Math.floor(action.newBoardSize / 2);
-      newBoard = newBoard.map((row, r_idx) =>
-        r_idx === newRow
-          ? row.map((cell, c_idx) => (c_idx === newCol ? 1 : cell))
-          : row
-      );
-      // Create first node of a snake
-      let newNode = new SnakeNode(newRow, newCol);
+      newBoard[newRow][newCol] = 1;
+      // Create snake deque
+      let newSnake = [[newRow, newCol]];
       return {
         ...state,
         board: newBoard,
-        snake_head: newNode,
-        snake_tail: newNode,
+        snake: newSnake,
       };
-    case "move":
-      // Get previous board state
-      let updatedBoard = state.board;
+    }
+    case "move": {
+      // Get previous state
+      let updatedBoard = state.board.map((row) => [...row]);
+      let updatedSnake = state.snake.map((node) => [...node]);
       // Move snake head to next spot on the board
-      updatedBoard = updatedBoard.map((row, r_idx) =>
-        r_idx === action.next_row
-          ? row.map((cell, c_idx) => (c_idx === action.next_col ? 1 : cell))
-          : row
-      );
-      // Remove tail from previous spot on the board
-      let [prev_row, prev_col] = state.snake_tail.coord;
-      // Remove snake tail spot on board
-      updatedBoard = updatedBoard.map((row, r_idx) =>
-        r_idx === prev_row
-          ? row.map((cell, c_idx) => (c_idx === prev_col ? 0 : cell))
-          : row
-      );
-      // Update snake head and tail
-      let new_head = new SnakeNode(action.next_row, action.next_col);
-      state.snake_head.prev = new_head;
-      let new_tail = state.snake_tail.prev;
-      state.snake_tail.prev = null;
+      updatedSnake.unshift([action.next_row, action.next_col]);
+      updatedBoard[action.next_row][action.next_col] = 1;
+      // Remove snake tail from previous spot on the board
+      const [prev_row, prev_col] = updatedSnake.pop();
+      updatedBoard[prev_row][prev_col] = 0;
       return {
         ...state,
         board: updatedBoard,
-        snake_head: new_head,
-        snake_tail: new_tail,
+        snake: updatedSnake,
       };
-    case "grow":
-      // Grow snake at next cell
-      break;
+    }
+    case "grow": {
+      // Get previous state
+      let updatedBoard = state.board.map((row) => [...row]);
+      let updatedSnake = state.snake.map((node) => [...node]);
+      // Move snake head to next spot on the board
+      updatedSnake.unshift([action.next_row, action.next_col]);
+      updatedBoard[action.next_row][action.next_col] = 1;
+      // Leave snake tail as is
+      return {
+        ...state,
+        board: updatedBoard,
+        snake: updatedSnake,
+      };
+    }
     default:
       throw new Error(`Unrecognized action type: ${action.type}`);
   }
@@ -114,8 +105,7 @@ export function determineEventAtNextCell(board, curr_row, curr_col, direction) {
 function runJingleSnakeBoard() {
   const [boardState, dispatchBoardState] = useReducer(boardReducer, {
     board: null,
-    snake_head: null,
-    snake_tail: null,
+    snake: null,
   });
   return [boardState, dispatchBoardState];
 }
