@@ -20,10 +20,13 @@ function boardReducer(state, action) {
       newBoard[newRow][newCol] = 1;
       // Create snake deque
       let newSnake = [[newRow, newCol]];
+      // Assume initial availability object is representative of what gave initial fill spots and snake location
+      let newAvailabilityObject = action.availabilityObject;
       return {
         ...state,
         board: newBoard,
         snake: newSnake,
+        availabilityObject: newAvailabilityObject,
       };
     }
     case "move": {
@@ -106,6 +109,7 @@ function runJingleSnakeBoard() {
   const [boardState, dispatchBoardState] = useReducer(boardReducer, {
     board: null,
     snake: null,
+    availabilityObject: null,
   });
   return [boardState, dispatchBoardState];
 }

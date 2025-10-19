@@ -10,7 +10,7 @@ const GameSpeed = Object.freeze({
   Pause: null,
 });
 
-function runJingleSnake(boardSize, fillSpots) {
+function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   // Set up state variables
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameSpeed, setGameSpeed] = useState(GameSpeed.Pause);
@@ -26,12 +26,13 @@ function runJingleSnake(boardSize, fillSpots) {
     dispatchBoardState({
       type: "start",
       newBoardSize: boardSize,
-      fillSpots: fillSpots,
+      fillSpots: initFillSpots,
+      availabilityObject: initAvailabilityObject,
     });
     // Turn game speed to normal and start game
     setGameSpeed(GameSpeed.Normal);
     setIsPlaying(true);
-  }, [boardSize, fillSpots]);
+  }, [boardSize, initFillSpots]);
 
   // Controls what happens on each render of the running game
   const gameTick = useCallback(() => {
