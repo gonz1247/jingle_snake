@@ -72,11 +72,16 @@ function boardReducer(state, action) {
       // Move snake head to next spot on the board
       updatedSnake.unshift([action.next_row, action.next_col]);
       updatedBoard[action.next_row][action.next_col] = 1;
-      // No need to update board availability or update snake tail
+      // No need update snake tail
+      // Add new character to the board
+      updatedBoard[action.fill_row][action.fill_col] = action.fill_char;
+      // Set availability object to one sent with action (since it constains history of assigning new fill character)
+      let updatedAvailabilityObject = action.availabilityObject;
       return {
         ...state,
         board: updatedBoard,
         snake: updatedSnake,
+        availabilityObject: updatedAvailabilityObject,
       };
     }
     default:

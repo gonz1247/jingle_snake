@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import runJingleSnakeBoard from "./runJingleSnakeBoard";
 import { determineEventAtNextCell } from "./runJingleSnakeBoard";
 import useInterval from "./useInterval";
+import { fillCellWithChar } from "../game_objects/BoardPopulator";
 
 // Used for setting time in ms that interval will use
 const GameSpeed = Object.freeze({
@@ -18,7 +19,8 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   const [keyDownHandled, setKeyDownHandled] = useState(false);
 
   // Intialize board
-  const [{ board, snake }, dispatchBoardState] = runJingleSnakeBoard();
+  let [{ board, snake, availabilityObject }, dispatchBoardState] =
+    runJingleSnakeBoard();
 
   // Initialize game start
   const startGame = useCallback(() => {
@@ -42,13 +44,38 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
       snake[0][1],
       moveDirection
     );
-    dispatchBoardState({
-      type: next_event,
-      next_row: next_row,
-      next_col: next_col,
-    });
+    if (next_event === "move") {
+      dispatchBoardState({
+        type: next_event,
+        next_row: next_row,
+        next_col: next_col,
+      });
+    } else if (next_event === "grow") {
+      let fill_row, fill_col, fill_char;
+      // get new character to add to board after snake eats character
+      ({
+        availability_object: availabilityObject,
+        fill_row,
+        fill_col,
+        fill_char,
+      } = fillCellWithChar(availabilityObject));
+      dispatchBoardState({
+        type: next_event,
+        next_row: next_row,
+        next_col: next_col,
+        availabilityObject: availabilityObject,
+        fill_row: fill_row,
+        fill_col: fill_col,
+        fill_char: fill_char,
+      });
+    } else {
+      // Game over, reset to defaults
+      setIsPlaying(false);
+      setMoveDirection("right");
+      setGameSpeed(GameSpeed.Pause);
+    }
     setKeyDownHandled(true);
-  }, [board, snake, moveDirection]);
+  }, [board, snake, availabilityObject, moveDirection]);
 
   // Interval to create continuous re-rendering
   useInterval(() => {
