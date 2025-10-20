@@ -1,6 +1,9 @@
 export function initFillBoardWithChars(boardSize, fillPercentage) {
   fillPercentage = Math.min(Math.max(0, fillPercentage), 1);
-  const n_fill = Math.floor(boardSize * boardSize * fillPercentage);
+  const n_fill = Math.max(
+    Math.floor(boardSize * boardSize * fillPercentage),
+    1
+  );
   // Set up availability object for board
   let avail_cells_array = Array(boardSize * boardSize)
     .fill(null)

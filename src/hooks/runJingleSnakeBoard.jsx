@@ -1,4 +1,8 @@
 import { useReducer } from "react";
+import {
+  removeCellAvailability,
+  addCellAvailability,
+} from "../game_objects/BoardPopulator";
 
 function boardReducer(state, action) {
   switch (action.type) {
@@ -33,16 +37,32 @@ function boardReducer(state, action) {
       // Get previous state
       let updatedBoard = state.board.map((row) => [...row]);
       let updatedSnake = state.snake.map((node) => [...node]);
+      let updatedAvailabilityObject = {
+        avail_cells_array: [...state.availabilityObject.avail_cells_array],
+        n_avail_cells: state.availabilityObject.n_avail_cells,
+        cell_2_idx_hashmap: [...state.availabilityObject.cell_2_idx_hashmap],
+      };
       // Move snake head to next spot on the board
       updatedSnake.unshift([action.next_row, action.next_col]);
       updatedBoard[action.next_row][action.next_col] = 1;
+      let cell_num = action.next_row * updatedBoard.length + action.next_col;
+      updatedAvailabilityObject = removeCellAvailability(
+        cell_num,
+        updatedAvailabilityObject
+      );
       // Remove snake tail from previous spot on the board
       const [prev_row, prev_col] = updatedSnake.pop();
       updatedBoard[prev_row][prev_col] = 0;
+      cell_num = prev_row * updatedBoard.length + prev_col;
+      updatedAvailabilityObject = addCellAvailability(
+        cell_num,
+        updatedAvailabilityObject
+      );
       return {
         ...state,
         board: updatedBoard,
         snake: updatedSnake,
+        availabilityObject: updatedAvailabilityObject,
       };
     }
     case "grow": {
@@ -52,7 +72,7 @@ function boardReducer(state, action) {
       // Move snake head to next spot on the board
       updatedSnake.unshift([action.next_row, action.next_col]);
       updatedBoard[action.next_row][action.next_col] = 1;
-      // Leave snake tail as is
+      // No need to update board availability or update snake tail
       return {
         ...state,
         board: updatedBoard,
