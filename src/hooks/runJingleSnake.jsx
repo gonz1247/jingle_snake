@@ -6,7 +6,7 @@ import { fillCellWithChar } from "../game_objects/BoardPopulator";
 
 // Used for setting time in ms that interval will use
 const GameSpeed = Object.freeze({
-  Normal: 200,
+  Normal: 150,
   Slow: 400,
   Pause: null,
 });
