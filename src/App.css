@@ -6,9 +6,9 @@
 }
 
 .cell {
+    width: 25px;
     aspect-ratio: 1;
     background-color: aliceblue;
-    border: 1px dashed;
 }
 
 .cell.snake {

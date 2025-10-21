@@ -2,7 +2,7 @@ function Cell({ value }) {
   let cellDisplay;
   let cellType;
   if (value === 0) {
-    cellDisplay = "_";
+    cellDisplay = "";
     cellType = "empty";
   } else if (value === 1) {
     cellDisplay = "";
