@@ -1,15 +1,20 @@
 function WordProgessDisplay({ word, n_letters }) {
   let display_word = "";
+  const A2Z = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   for (let i = 0; i < word.length; i++) {
     if (word[i] == " ") {
-      display_word += "| ";
+      display_word += "  ";
     } else if (i < n_letters) {
       display_word += word[i];
     } else {
-      display_word += "_ ";
+      if (A2Z.includes(word.toUpperCase()[i])) {
+        display_word += "_ ";
+      } else {
+        display_word += word[i];
+      }
     }
   }
-  return <p>{display_word}</p>;
+  return <pre>{display_word}</pre>;
 }
 
 function GameRunningDisplay({ word, score, n_letters }) {
