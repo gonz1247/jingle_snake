@@ -22,6 +22,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   const [keyDownHandled, setKeyDownHandled] = useState(false);
   // Game scoring parameters
   const [songTitle, setSongTitle] = useState(null);
+  const [nextSongTitle, setNextSongTitle] = useState(null);
   const [score, setScore] = useState(0);
   const [nLettersGuessed, setNLettersGuessed] = useState(0);
 
@@ -35,6 +36,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   const startGame = useCallback(() => {
     // Initialize score and initial song title
     setSongTitle("New Song Title");
+    setNextSongTitle("Song #2");
     setNLettersGuessed(0);
     setScore(0);
 
@@ -55,9 +57,20 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
 
   // Controls what happens on each render of the running game
   const gameTick = useCallback(() => {
-    // Update score as needed
-    if (nCharsCorrect != nLettersGuessed) {
+    // Check state of title guessing
+    if (nCharsCorrect >= songTitle.length) {
+      // Finished the song title so set to next title
+      setSongTitle(nextSongTitle);
+      setNextSongTitle("Song #3");
+      // Increment score (1 for correct letter and 5 for completing title)
+      setScore(score + 6);
+      // Reset number of characters guessed
+      nCharsCorrect = 0;
+      setNLettersGuessed(nCharsCorrect);
+    } else if (nCharsCorrect != nLettersGuessed) {
+      // Increment score (1 for correct letter)
       setScore(score + 1);
+      // Update number of characters guessed
       setNLettersGuessed(nCharsCorrect);
     }
     const { next_event, next_row, next_col } = determineEventAtNextCell(
@@ -72,6 +85,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
         type: next_event,
         next_row: next_row,
         next_col: next_col,
+        nLettersGuessed: nCharsCorrect,
       });
     } else if (next_event === "grow") {
       let fill_row, fill_col, fill_char;
@@ -83,7 +97,11 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
         fill_char,
       } = fillCellWithChar(availabilityObject));
       // Double check that board has next letter on it
-      let nextLetter = nextLetterNeededOnBoard(songTitle, nCharsCorrect);
+      let nextLetter = nextLetterNeededOnBoard(
+        songTitle,
+        nCharsCorrect,
+        nextSongTitle
+      );
       if (!charsOnBoard.hasOwnProperty(nextLetter)) {
         fill_char = nextLetter;
       }
@@ -110,10 +128,9 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
     board,
     snake,
     nCharsCorrect,
-    nLettersGuessed,
     availabilityObject,
-    moveDirection,
     charsOnBoard,
+    moveDirection,
   ]);
 
   // Interval to create continuous re-rendering

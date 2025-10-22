@@ -81,11 +81,14 @@ function boardReducer(state, action) {
         cell_num,
         updatedAvailabilityObject
       );
+      // Set letters guessed in case updated during last render
+      let nLettersGuessed = action.nLettersGuessed;
       return {
         ...state,
         board: updatedBoard,
         snake: updatedSnake,
         availabilityObject: updatedAvailabilityObject,
+        nCharsCorrect: nLettersGuessed,
       };
     }
     case "grow": {
@@ -189,7 +192,11 @@ export function determineEventAtNextCell(board, curr_row, curr_col, direction) {
   }
 }
 
-export function nextLetterNeededOnBoard(songTitle, nLettersGuessed) {
+export function nextLetterNeededOnBoard(
+  songTitle,
+  nLettersGuessed,
+  nextSongTitle
+) {
   // Capital letters only
   songTitle = songTitle.toUpperCase();
   // Skip over any characters that are not A-Z
@@ -202,11 +209,8 @@ export function nextLetterNeededOnBoard(songTitle, nLettersGuessed) {
     nLettersGuessed += 1;
   }
   if (nLettersGuessed >= songTitle.length) {
-    // Need new word after being eaten
-    // Get random number representing ASCII character with offset of two
-    const A = 65; // ASCII
-    const Z = 90; // ASCII
-    return Math.floor(Math.random() * (Z - A + 1)) + A + 2;
+    // First letter of next word will be next
+    return nextSongTitle.charCodeAt(0) + 2;
   } else {
     return songTitle.charCodeAt(nLettersGuessed) + 2;
   }
