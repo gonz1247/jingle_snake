@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import runJingleSnakeBoard from "./runJingleSnakeBoard";
-import { determineEventAtNextCell } from "./runJingleSnakeBoard";
+import {
+  determineEventAtNextCell,
+  nextLetterNeededOnBoard,
+} from "./runJingleSnakeBoard";
 import useInterval from "./useInterval";
 import { fillCellWithChar } from "../game_objects/BoardPopulator";
 
@@ -17,19 +20,33 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   const [gameSpeed, setGameSpeed] = useState(GameSpeed.Pause);
   const [moveDirection, setMoveDirection] = useState("right");
   const [keyDownHandled, setKeyDownHandled] = useState(false);
+  // Game scoring parameters
+  const [songTitle, setSongTitle] = useState(null);
+  const [score, setScore] = useState(0);
+  const [nLettersGuessed, setNLettersGuessed] = useState(0);
 
   // Intialize board
-  let [{ board, snake, availabilityObject }, dispatchBoardState] =
-    runJingleSnakeBoard();
+  let [
+    { board, snake, availabilityObject, nCharsCorrect, charsOnBoard },
+    dispatchBoardState,
+  ] = runJingleSnakeBoard();
 
   // Initialize game start
   const startGame = useCallback(() => {
+    // Initialize score and initial song title
+    setSongTitle("New Song Title");
+    setNLettersGuessed(0);
+    setScore(0);
+
     // update board to be right size and have initial characters
     dispatchBoardState({
       type: "start",
       newBoardSize: boardSize,
       fillSpots: initFillSpots,
       availabilityObject: initAvailabilityObject,
+      songTitle: songTitle,
+      nLettersGuessed: 0,
+      firstLetter: "N",
     });
     // Turn game speed to normal and start game
     setGameSpeed(GameSpeed.Normal);
@@ -38,6 +55,11 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
 
   // Controls what happens on each render of the running game
   const gameTick = useCallback(() => {
+    // Update score as needed
+    if (nCharsCorrect != nLettersGuessed) {
+      setScore(score + 1);
+      setNLettersGuessed(nCharsCorrect);
+    }
     const { next_event, next_row, next_col } = determineEventAtNextCell(
       board,
       snake[0][0],
@@ -45,6 +67,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
       moveDirection
     );
     if (next_event === "move") {
+      // Update game state
       dispatchBoardState({
         type: next_event,
         next_row: next_row,
@@ -59,6 +82,12 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
         fill_col,
         fill_char,
       } = fillCellWithChar(availabilityObject));
+      // Double check that board has next letter on it
+      let nextLetter = nextLetterNeededOnBoard(songTitle, nCharsCorrect);
+      if (!charsOnBoard.hasOwnProperty(nextLetter)) {
+        fill_char = nextLetter;
+      }
+      // Update game state
       dispatchBoardState({
         type: next_event,
         next_row: next_row,
@@ -67,6 +96,8 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
         fill_row: fill_row,
         fill_col: fill_col,
         fill_char: fill_char,
+        songTitle: songTitle,
+        nLettersGuessed: nCharsCorrect,
       });
     } else {
       // Game over, reset to defaults
@@ -75,7 +106,15 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
       setGameSpeed(GameSpeed.Pause);
     }
     setKeyDownHandled(true);
-  }, [board, snake, availabilityObject, moveDirection]);
+  }, [
+    board,
+    snake,
+    nCharsCorrect,
+    nLettersGuessed,
+    availabilityObject,
+    moveDirection,
+    charsOnBoard,
+  ]);
 
   // Interval to create continuous re-rendering
   useInterval(() => {
@@ -126,7 +165,14 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   }, [isPlaying, moveDirection, keyDownHandled]);
 
   // Return current state of the game
-  return { board, startGame, isPlaying };
+  return {
+    board,
+    startGame,
+    isPlaying,
+    songTitle,
+    score,
+    nLettersGuessed,
+  };
 }
 
 export default runJingleSnake;

@@ -11,12 +11,31 @@ function boardReducer(state, action) {
       let newBoard = Array(action.newBoardSize)
         .fill(null)
         .map(() => Array(action.newBoardSize).fill(0));
-      // Populate board with random letters
+      // Initialize object (i.e., hash map) of letters on board
+      let newCharsOnBoard = {};
+      // Populate board with random letterslet char_row = action.fillSpots[i].row;
+      let char_row, char_col, char;
       for (let i = 0; i < action.fillSpots.length; i++) {
-        let char_row = action.fillSpots[i].row;
-        let char_col = action.fillSpots[i].col;
-        let char = action.fillSpots[i].char;
+        char_row = action.fillSpots[i].row;
+        char_col = action.fillSpots[i].col;
+        char = action.fillSpots[i].char;
         newBoard[char_row][char_col] = char;
+        if (newCharsOnBoard.hasOwnProperty(char)) {
+          newCharsOnBoard[char] += 1;
+        } else {
+          newCharsOnBoard[char] = 1;
+        }
+      }
+      // Make sure first letter is on the board
+      let firstLetter = action.firstLetter.charCodeAt(0) + 2;
+      if (!newCharsOnBoard.hasOwnProperty(firstLetter)) {
+        // Replace last letter added to board with first letter
+        newCharsOnBoard[char] -= 1;
+        if (newCharsOnBoard[char] === 0) {
+          delete newCharsOnBoard[char];
+        }
+        newBoard[char_row][char_col] = firstLetter;
+        newCharsOnBoard[firstLetter] = 1;
       }
       // Add snake marker at center of board (this could override a character which is okay for now)
       const newRow = Math.floor(action.newBoardSize / 2);
@@ -26,11 +45,15 @@ function boardReducer(state, action) {
       let newSnake = [[newRow, newCol]];
       // Assume initial availability object is representative of what gave initial fill spots and snake location
       let newAvailabilityObject = action.availabilityObject;
+      // Initiate progress
+      let newNLettersGuessed = action.nLettersGuessed;
       return {
         ...state,
         board: newBoard,
         snake: newSnake,
         availabilityObject: newAvailabilityObject,
+        nCharsCorrect: newNLettersGuessed,
+        charsOnBoard: newCharsOnBoard,
       };
     }
     case "move": {
@@ -69,12 +92,46 @@ function boardReducer(state, action) {
       // Get previous state
       let updatedBoard = state.board.map((row) => [...row]);
       let updatedSnake = state.snake.map((node) => [...node]);
+      let updatedCharsOnBoard = { ...state.charsOnBoard };
+      // Get song title and current letters guessed
+      let songTitle = action.songTitle.toUpperCase();
+      let nLettersGuessed = action.nLettersGuessed;
+      // Increment score and progress if applicable
+      let eaten_char = String.fromCharCode(
+        updatedBoard[action.next_row][action.next_col] - 2
+      );
+      if (eaten_char === songTitle[nLettersGuessed]) {
+        // Skip over any characters that are not A-Z
+        const A2Z = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        nLettersGuessed += 1;
+        while (
+          nLettersGuessed < songTitle.length &&
+          !A2Z.includes(songTitle[nLettersGuessed])
+        ) {
+          nLettersGuessed += 1;
+        }
+      }
+      // Remove eaten char from board character hash map
+      updatedCharsOnBoard[updatedBoard[action.next_row][action.next_col]] -= 1;
+      if (
+        updatedCharsOnBoard[updatedBoard[action.next_row][action.next_col]] == 0
+      ) {
+        delete updatedCharsOnBoard[
+          updatedBoard[action.next_row][action.next_col]
+        ];
+      }
       // Move snake head to next spot on the board
       updatedSnake.unshift([action.next_row, action.next_col]);
       updatedBoard[action.next_row][action.next_col] = 1;
       // No need update snake tail
       // Add new character to the board
       updatedBoard[action.fill_row][action.fill_col] = action.fill_char;
+      // Add new char to character hash map
+      if (updatedCharsOnBoard.hasOwnProperty(action.fill_char)) {
+        updatedCharsOnBoard[action.fill_char] += 1;
+      } else {
+        updatedCharsOnBoard[action.fill_char] = 1;
+      }
       // Set availability object to one sent with action (since it constains history of assigning new fill character)
       let updatedAvailabilityObject = action.availabilityObject;
       return {
@@ -82,6 +139,8 @@ function boardReducer(state, action) {
         board: updatedBoard,
         snake: updatedSnake,
         availabilityObject: updatedAvailabilityObject,
+        nCharsCorrect: nLettersGuessed,
+        charsOnBoard: updatedCharsOnBoard,
       };
     }
     default:
@@ -130,11 +189,36 @@ export function determineEventAtNextCell(board, curr_row, curr_col, direction) {
   }
 }
 
+export function nextLetterNeededOnBoard(songTitle, nLettersGuessed) {
+  // Capital letters only
+  songTitle = songTitle.toUpperCase();
+  // Skip over any characters that are not A-Z
+  const A2Z = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  nLettersGuessed += 1;
+  while (
+    nLettersGuessed < songTitle.length &&
+    !A2Z.includes(songTitle[nLettersGuessed])
+  ) {
+    nLettersGuessed += 1;
+  }
+  if (nLettersGuessed >= songTitle.length) {
+    // Need new word after being eaten
+    // Get random number representing ASCII character with offset of two
+    const A = 65; // ASCII
+    const Z = 90; // ASCII
+    return Math.floor(Math.random() * (Z - A + 1)) + A + 2;
+  } else {
+    return songTitle.charCodeAt(nLettersGuessed) + 2;
+  }
+}
+
 function runJingleSnakeBoard() {
   const [boardState, dispatchBoardState] = useReducer(boardReducer, {
     board: null,
     snake: null,
     availabilityObject: null,
+    nCharsCorrect: null,
+    charsOnBoard: null,
   });
   return [boardState, dispatchBoardState];
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "./components/Header";
 import GameInputs from "./components/GameInputs";
+import GameRunningDisplay from "./components/GameRunningDisplay";
 import BoardDisplay from "./components/BoardDisplay";
 import runJingleSnake from "./hooks/runJingleSnake";
 import { initFillBoardWithChars } from "./game_objects/BoardPopulator";
@@ -23,11 +24,8 @@ function App() {
     initFillBoardWithChars(boardSize, fillPercentage);
 
   // Actual board that will be used for the game
-  const { board, startGame, isPlaying } = runJingleSnake(
-    boardSize,
-    initFillSpots,
-    initAvailabilityObject
-  );
+  const { board, startGame, isPlaying, songTitle, score, nLettersGuessed } =
+    runJingleSnake(boardSize, initFillSpots, initAvailabilityObject);
 
   // Preview board that can be updated in real time when selecting board size and difficulty
   const boardPreview = Array(boardSize)
@@ -48,7 +46,11 @@ function App() {
       <Header>Jingle Snake</Header>
       <br></br>
       {isPlaying ? (
-        <p className="d-flex justify-content-center">Have Fun Playing!</p>
+        <GameRunningDisplay
+          word={songTitle}
+          n_letters={nLettersGuessed}
+          score={score}
+        />
       ) : (
         <GameInputs
           boardSize={boardSize}
