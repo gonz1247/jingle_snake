@@ -24,6 +24,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   const [songTitle, setSongTitle] = useState(null);
   const [nextSongTitle, setNextSongTitle] = useState(null);
   const [score, setScore] = useState(0);
+  const [highestScore, setHighestScore] = useState(0);
   const [nLettersGuessed, setNLettersGuessed] = useState(0);
 
   // Intialize board
@@ -53,7 +54,13 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
     // Turn game speed to normal and start game
     setGameSpeed(GameSpeed.Normal);
     setIsPlaying(true);
-  }, [boardSize, initFillSpots]);
+  }, [boardSize, initFillSpots, isPlaying]);
+
+  const restartGame = () => {
+    setGameSpeed(GameSpeed.Pause);
+    setIsPlaying(false);
+    setMoveDirection("right");
+  };
 
   // Controls what happens on each render of the running game
   const gameTick = useCallback(() => {
@@ -122,6 +129,8 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
       setIsPlaying(false);
       setMoveDirection("right");
       setGameSpeed(GameSpeed.Pause);
+      // Capture highest score so far
+      setHighestScore(Math.max(score, highestScore));
     }
     setKeyDownHandled(true);
   }, [
@@ -188,7 +197,9 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
     isPlaying,
     songTitle,
     score,
+    highestScore,
     nLettersGuessed,
+    restartGame,
   };
 }
 

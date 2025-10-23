@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Header from "./components/Header";
 import GameInputs from "./components/GameInputs";
-import GameRunningDisplay from "./components/GameRunningDisplay";
+import WordProgessDisplay from "./components/WordProgessDisplay";
 import BoardDisplay from "./components/BoardDisplay";
 import runJingleSnake from "./hooks/runJingleSnake";
 import { initFillBoardWithChars } from "./game_objects/BoardPopulator";
@@ -24,8 +24,16 @@ function App() {
     initFillBoardWithChars(boardSize, fillPercentage);
 
   // Actual board that will be used for the game
-  const { board, startGame, isPlaying, songTitle, score, nLettersGuessed } =
-    runJingleSnake(boardSize, initFillSpots, initAvailabilityObject);
+  const {
+    board,
+    startGame,
+    isPlaying,
+    songTitle,
+    score,
+    highestScore,
+    nLettersGuessed,
+    restartGame,
+  } = runJingleSnake(boardSize, initFillSpots, initAvailabilityObject);
 
   // Preview board that can be updated in real time when selecting board size and difficulty
   const boardPreview = Array(boardSize)
@@ -46,25 +54,54 @@ function App() {
       <Header>Jingle Snake</Header>
       <br></br>
       {isPlaying ? (
-        <GameRunningDisplay
-          word={songTitle}
-          n_letters={nLettersGuessed}
-          score={score}
-        />
+        <WordProgessDisplay word={songTitle} n_letters={nLettersGuessed} />
       ) : (
         <GameInputs
           boardSize={boardSize}
           setBoardSize={setBoardSize}
           difficulty={difficulty}
           setDifficulty={setDifficulty}
-          startGame={startGame}
         />
       )}
       <br></br>
       {isPlaying ? (
-        <BoardDisplay board={board} />
+        <div className="d-flex justify-content-center gap-3">
+          <div className="side_of_board">
+            <p className="d-flex justify-content-center">Current Score</p>
+            <p className="d-flex justify-content-center">{score}</p>
+          </div>
+          <div>
+            <BoardDisplay board={board} />
+          </div>
+          <div className="side_of_board">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={restartGame}
+            >
+              Reset Game
+            </button>
+          </div>
+        </div>
       ) : (
-        <BoardDisplay board={boardPreview} />
+        <div className="d-flex justify-content-center gap-3">
+          <div className="side_of_board">
+            <p className="d-flex justify-content-center">Highest Score</p>
+            <p className="d-flex justify-content-center">{highestScore}</p>
+          </div>
+          <div>
+            <BoardDisplay board={boardPreview} />
+          </div>
+          <div className="side_of_board">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={startGame}
+            >
+              Start New Game
+            </button>
+          </div>
+        </div>
       )}
     </>
   );

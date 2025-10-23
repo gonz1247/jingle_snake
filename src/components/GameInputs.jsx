@@ -44,22 +44,11 @@ function Difficulty({ difficulty, setDifficulty }) {
   );
 }
 
-function StartGame({ startGame }) {
-  return <button type="button" className="btn btn-primary" onClick={startGame}>Start New Game</button>;
-}
-
-function GameInputs({
-  boardSize,
-  setBoardSize,
-  difficulty,
-  setDifficulty,
-  startGame,
-}) {
+function GameInputs({ boardSize, setBoardSize, difficulty, setDifficulty }) {
   return (
-    <div className="d-flex justify-content-evenly">
+    <div className="d-flex justify-content-center gap-3 above_board">
       <BoardSize boardSize={boardSize} setBoardSize={setBoardSize} />
       <Difficulty difficulty={difficulty} setDifficulty={setDifficulty} />
-      <StartGame startGame={startGame}/>
     </div>
   );
 }

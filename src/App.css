@@ -15,4 +15,13 @@
     background-color: black;
 }
 
+.above_board {
+    height: 45px;
+}
+
+.side_of_board {
+    width: 150px;
+}
+
+
 
