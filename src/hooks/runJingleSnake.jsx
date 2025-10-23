@@ -82,8 +82,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
     }
     const { next_event, next_row, next_col } = determineEventAtNextCell(
       board,
-      snake[0][0],
-      snake[0][1],
+      snake,
       moveDirection
     );
     if (next_event === "move") {

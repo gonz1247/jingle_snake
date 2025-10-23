@@ -65,19 +65,19 @@ function boardReducer(state, action) {
         n_avail_cells: state.availabilityObject.n_avail_cells,
         cell_2_idx_hashmap: [...state.availabilityObject.cell_2_idx_hashmap],
       };
-      // Move snake head to next spot on the board
-      updatedSnake.unshift([action.next_row, action.next_col]);
-      updatedBoard[action.next_row][action.next_col] = 1;
-      let cell_num = action.next_row * updatedBoard.length + action.next_col;
-      updatedAvailabilityObject = removeCellAvailability(
-        cell_num,
-        updatedAvailabilityObject
-      );
       // Remove snake tail from previous spot on the board
       const [prev_row, prev_col] = updatedSnake.pop();
       updatedBoard[prev_row][prev_col] = 0;
-      cell_num = prev_row * updatedBoard.length + prev_col;
+      let cell_num = prev_row * updatedBoard.length + prev_col;
       updatedAvailabilityObject = addCellAvailability(
+        cell_num,
+        updatedAvailabilityObject
+      );
+      // Move snake head to next spot on the board
+      updatedSnake.unshift([action.next_row, action.next_col]);
+      updatedBoard[action.next_row][action.next_col] = 1;
+      cell_num = action.next_row * updatedBoard.length + action.next_col;
+      updatedAvailabilityObject = removeCellAvailability(
         cell_num,
         updatedAvailabilityObject
       );
@@ -151,22 +151,22 @@ function boardReducer(state, action) {
   }
 }
 
-export function determineEventAtNextCell(board, curr_row, curr_col, direction) {
-  // get next cell based on current position and travel direction
-  let next_row = curr_row;
-  let next_col = curr_col;
+export function determineEventAtNextCell(board, snake, direction) {
+  // get next cell based on current position of snake head and travel direction
+  let next_row = snake[0][0];
+  let next_col = snake[0][1];
   switch (direction) {
     case "up":
-      next_row = curr_row - 1;
+      next_row -= 1;
       break;
     case "down":
-      next_row = curr_row + 1;
+      next_row += 1;
       break;
     case "right":
-      next_col = curr_col + 1;
+      next_col += 1;
       break;
     case "left":
-      next_col = curr_col - 1;
+      next_col -= 1;
       break;
     default:
       throw new Error(`Unrecognized direction: ${direction}`);
@@ -181,8 +181,24 @@ export function determineEventAtNextCell(board, curr_row, curr_col, direction) {
     // open space
     return { next_event: "move", next_row: next_row, next_col: next_col };
   } else if (next_cell_val == 1) {
-    // collision with body of snake
-    return { next_event: "game over", next_row: next_row, next_col: next_col };
+    // Check that not colliding with tail
+    const tail_row = snake[snake.length - 1][0];
+    const tail_col = snake[snake.length - 1][1];
+    if (next_row === tail_row && next_col === tail_col) {
+      // tail will move before collision so next event is a move
+      return {
+        next_event: "move",
+        next_row: next_row,
+        next_col: next_col,
+      };
+    } else {
+      // collision with body of snake
+      return {
+        next_event: "game over",
+        next_row: next_row,
+        next_col: next_col,
+      };
+    }
   } else if (next_cell_val <= 0) {
     // A bug must exist somewhere
     throw new Error("Board has a negative cell value");
