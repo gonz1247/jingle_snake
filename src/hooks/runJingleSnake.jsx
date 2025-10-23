@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import runJingleSnakeBoard from "./runJingleSnakeBoard";
+import gameStateManager from "./gameStateManagement";
 import {
   determineEventAtNextCell,
   nextLetterNeededOnBoard,
-} from "./runJingleSnakeBoard";
+} from "./gameStateManagement";
 import useInterval from "./useInterval";
 import { fillCellWithChar } from "../game_objects/BoardPopulator";
 
@@ -31,7 +31,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   let [
     { board, snake, availabilityObject, nCharsCorrect, charsOnBoard },
     dispatchBoardState,
-  ] = runJingleSnakeBoard();
+  ] = gameStateManager();
 
   // Initialize game start
   const startGame = useCallback(() => {

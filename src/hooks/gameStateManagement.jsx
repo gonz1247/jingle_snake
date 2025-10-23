@@ -216,7 +216,7 @@ export function nextLetterNeededOnBoard(
   }
 }
 
-function runJingleSnakeBoard() {
+function gameStateManager() {
   const [boardState, dispatchBoardState] = useReducer(boardReducer, {
     board: null,
     snake: null,
@@ -227,4 +227,4 @@ function runJingleSnakeBoard() {
   return [boardState, dispatchBoardState];
 }
 
-export default runJingleSnakeBoard;
+export default gameStateManager;
