@@ -1,8 +1,9 @@
 import { useReducer } from "react";
 import {
+  fillCellWithChar,
   removeCellAvailability,
   addCellAvailability,
-} from "../game_objects/BoardPopulator";
+} from "../utilities/BoardPopulator";
 
 function boardReducer(state, action) {
   switch (action.type) {
@@ -208,11 +209,7 @@ export function determineEventAtNextCell(board, snake, direction) {
   }
 }
 
-export function nextLetterNeededOnBoard(
-  songTitle,
-  nLettersGuessed,
-  nextSongTitle
-) {
+function nextLetterNeededOnBoard(songTitle, nLettersGuessed, nextSongTitle) {
   // Capital letters only
   songTitle = songTitle.toUpperCase();
   // Skip over any characters that are not A-Z
@@ -232,7 +229,34 @@ export function nextLetterNeededOnBoard(
   }
 }
 
-function gameStateManager() {
+export function nextLetterForBoard(
+  availabilityObject,
+  songTitle,
+  nCharsCorrect,
+  nextSongTitle,
+  charsOnBoard
+) {
+  let fill_row, fill_col, fill_char;
+  // Get new character and random spot on the board
+  ({
+    availability_object: availabilityObject,
+    fill_row,
+    fill_col,
+    fill_char,
+  } = fillCellWithChar(availabilityObject));
+  // Double check that board has next letter on it
+  let nextLetter = nextLetterNeededOnBoard(
+    songTitle,
+    nCharsCorrect,
+    nextSongTitle
+  );
+  if (!charsOnBoard.hasOwnProperty(nextLetter)) {
+    fill_char = nextLetter;
+  }
+  return { availabilityObject, fill_row, fill_col, fill_char };
+}
+
+export default function gameStateManager() {
   const [boardState, dispatchBoardState] = useReducer(boardReducer, {
     board: null,
     snake: null,
@@ -242,5 +266,3 @@ function gameStateManager() {
   });
   return [boardState, dispatchBoardState];
 }
-
-export default gameStateManager;

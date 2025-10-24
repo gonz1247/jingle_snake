@@ -4,7 +4,7 @@ import GameInputs from "./components/GameInputs";
 import WordProgessDisplay from "./components/WordProgessDisplay";
 import BoardDisplay from "./components/BoardDisplay";
 import runJingleSnake from "./hooks/runJingleSnake";
-import { initFillBoardWithChars } from "./game_objects/BoardPopulator";
+import { initFillBoardWithChars } from "./utilities/BoardPopulator";
 
 function App() {
   // Game Settings
@@ -23,18 +23,6 @@ function App() {
   let { fillSpots: initFillSpots, availabilityObject: initAvailabilityObject } =
     initFillBoardWithChars(boardSize, fillPercentage);
 
-  // Actual board that will be used for the game
-  const {
-    board,
-    startGame,
-    isPlaying,
-    songTitle,
-    score,
-    highestScore,
-    nLettersGuessed,
-    restartGame,
-  } = runJingleSnake(boardSize, initFillSpots, initAvailabilityObject);
-
   // Preview board that can be updated in real time when selecting board size and difficulty
   const boardPreview = Array(boardSize)
     .fill(null)
@@ -46,9 +34,22 @@ function App() {
     // Add random placeholder for now
     boardPreview[char_row][char_col] = "#";
   }
-  // Add snake at center of the board
+  // Add snake at center of the preview board
   boardPreview[Math.floor(boardSize / 2)][Math.floor(boardSize / 2)] = 1;
 
+  // Hook used to run the game
+  const {
+    board,
+    startGame,
+    isPlaying,
+    songTitle,
+    score,
+    highestScore,
+    nLettersGuessed,
+    restartGame,
+  } = runJingleSnake(boardSize, initFillSpots, initAvailabilityObject);
+
+  // Render game to page
   return (
     <>
       <Header>Jingle Snake</Header>

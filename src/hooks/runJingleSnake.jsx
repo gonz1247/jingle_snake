@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import gameStateManager from "./gameStateManagement";
-import {
+import gameStateManager, {
   determineEventAtNextCell,
-  nextLetterNeededOnBoard,
+  nextLetterForBoard,
 } from "./gameStateManagement";
 import useInterval from "./useInterval";
-import { fillCellWithChar } from "../game_objects/BoardPopulator";
 
 // Used for setting time in ms that interval will use
 const GameSpeed = Object.freeze({
-  Normal: 150,
-  Slow: 400,
+  Play: 150,
   Pause: null,
 });
 
@@ -52,7 +49,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
       firstLetter: "N",
     });
     // Turn game speed to normal and start game
-    setGameSpeed(GameSpeed.Normal);
+    setGameSpeed(GameSpeed.Play);
     setIsPlaying(true);
   }, [boardSize, initFillSpots, isPlaying]);
 
@@ -94,23 +91,16 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
         nLettersGuessed: nCharsCorrect,
       });
     } else if (next_event === "grow") {
-      let fill_row, fill_col, fill_char;
       // get new character to add to board after snake eats character
-      ({
-        availability_object: availabilityObject,
-        fill_row,
-        fill_col,
-        fill_char,
-      } = fillCellWithChar(availabilityObject));
-      // Double check that board has next letter on it
-      let nextLetter = nextLetterNeededOnBoard(
-        songTitle,
-        nCharsCorrect,
-        nextSongTitle
-      );
-      if (!charsOnBoard.hasOwnProperty(nextLetter)) {
-        fill_char = nextLetter;
-      }
+      let fill_row, fill_col, fill_char;
+      ({ availabilityObject, fill_row, fill_col, fill_char } =
+        nextLetterForBoard(
+          availabilityObject,
+          songTitle,
+          nCharsCorrect,
+          nextSongTitle,
+          charsOnBoard
+        ));
       // Update game state
       dispatchBoardState({
         type: next_event,
