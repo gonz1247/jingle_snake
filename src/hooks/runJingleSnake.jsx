@@ -24,7 +24,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   const [highestScore, setHighestScore] = useState(0);
   const [nLettersGuessed, setNLettersGuessed] = useState(0);
 
-  // Intialize board
+  // Initialize board
   let [
     { board, snake, availabilityObject, nCharsCorrect, charsOnBoard },
     dispatchBoardState,
