@@ -82,7 +82,6 @@ function runJingleSnake(
           return;
         }
         setTrack(state.track_window.current_track);
-
       });
 
       player.connect();
@@ -92,7 +91,6 @@ function runJingleSnake(
   // Actions to initialize game start
   const startGame = useCallback(() => {
     // Turn on music player and get new song
-    player.nextTrack();
     player.getCurrentState().then((state) => {
       if (!state) {
         console.error("User is not playing music through the Web Playback SDK");
@@ -121,6 +119,7 @@ function runJingleSnake(
       setGameSpeed(GameSpeed.Play);
       setIsPlaying(true);
     });
+    player.nextTrack();
   }, [boardSize, initFillSpots, isPlaying, player]);
 
   // Actions to end game and restart it
@@ -135,11 +134,29 @@ function runJingleSnake(
 
   // Controls what happens on each render of the running game
   const gameTick = useCallback(() => {
+    // Check actual songs being played in Spotify
+    player.getCurrentState().then((state) => {
+      if (!state) {
+        console.error("User is not playing music through the Web Playback SDK");
+        return;
+      }
+
+      // Get song titles of current and next song in queue
+      const actual_current = state.track_window.current_track.name;
+      const actual_next = state.track_window.next_tracks[0].name;
+
+      if (nextSongTitle === null) {
+        // song was recently switched so need to set next song
+        setNextSongTitle(actual_next);
+        return;
+      }
+    });
     // Check state of title guessing
     if (nCharsCorrect >= songTitle.length) {
-      // Finished the song title so set to next title
+      // Finished the song title so skip to next song
       setSongTitle(nextSongTitle);
-      setNextSongTitle("Song #3");
+      setNextSongTitle(null);
+      player.nextTrack();
       // Increment score (1 for correct letter and 5 for completing title)
       setScore(score + 6);
       // Reset number of characters guessed
