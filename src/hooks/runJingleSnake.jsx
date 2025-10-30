@@ -11,7 +11,21 @@ const GameSpeed = Object.freeze({
   Pause: null,
 });
 
-function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
+// Empty track object
+const track = {
+  name: "",
+  album: {
+    images: [{ url: "" }],
+  },
+  artists: [{ name: "" }],
+};
+
+function runJingleSnake(
+  boardSize,
+  initFillSpots,
+  initAvailabilityObject,
+  token
+) {
   // Set up state variables
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameSpeed, setGameSpeed] = useState(GameSpeed.Pause);
@@ -23,40 +37,100 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
   const [score, setScore] = useState(0);
   const [highestScore, setHighestScore] = useState(0);
   const [nLettersGuessed, setNLettersGuessed] = useState(0);
+  // Spotify hooks
+  const [player, setPlayer] = useState(undefined);
+  const [current_track, setTrack] = useState(track);
 
-  // Initialize board
+  // Game state manager
   let [
     { board, snake, availabilityObject, nCharsCorrect, charsOnBoard },
     dispatchBoardState,
   ] = gameStateManager();
 
-  // Initialize game start
+  // Enable Spotify functionality
+  useEffect(() => {
+    if (token === null) {
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://sdk.scdn.co/spotify-player.js";
+    script.async = true;
+
+    document.body.appendChild(script);
+
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const player = new window.Spotify.Player({
+        name: "Jingle Snake Game",
+        getOAuthToken: (cb) => {
+          cb(token);
+        },
+        volume: 0.5,
+      });
+
+      setPlayer(player);
+
+      player.addListener("ready", ({ device_id }) => {
+        console.log("Ready with Device ID", device_id);
+      });
+
+      player.addListener("not_ready", ({ device_id }) => {
+        console.log("Device ID has gone offline", device_id);
+      });
+
+      player.addListener("player_state_changed", (state) => {
+        if (!state) {
+          return;
+        }
+        setTrack(state.track_window.current_track);
+
+      });
+
+      player.connect();
+    };
+  }, [token]);
+
+  // Actions to initialize game start
   const startGame = useCallback(() => {
-    // Initialize score and initial song title
-    setSongTitle("New Song Title");
-    setNextSongTitle("Song #2");
-    setNLettersGuessed(0);
-    setScore(0);
+    // Turn on music player and get new song
+    player.nextTrack();
+    player.getCurrentState().then((state) => {
+      if (!state) {
+        console.error("User is not playing music through the Web Playback SDK");
+        return;
+      }
 
-    // update board to be right size and have initial characters
-    dispatchBoardState({
-      type: "start",
-      newBoardSize: boardSize,
-      fillSpots: initFillSpots,
-      availabilityObject: initAvailabilityObject,
-      songTitle: songTitle,
-      nLettersGuessed: 0,
-      firstLetter: "N",
+      // Get song titles of first and second songs in queue
+      const first_track = state.track_window.next_tracks[0].name;
+
+      // Initialize score and initial song title
+      setSongTitle(first_track);
+      setNextSongTitle(null);
+      setNLettersGuessed(0);
+      setScore(0);
+
+      // update board to be right size and have initial characters
+      dispatchBoardState({
+        type: "start",
+        newBoardSize: boardSize,
+        fillSpots: initFillSpots,
+        availabilityObject: initAvailabilityObject,
+        nLettersGuessed: 0,
+        firstLetter: first_track[0],
+      });
+      // Turn game speed to normal and start game
+      setGameSpeed(GameSpeed.Play);
+      setIsPlaying(true);
     });
-    // Turn game speed to normal and start game
-    setGameSpeed(GameSpeed.Play);
-    setIsPlaying(true);
-  }, [boardSize, initFillSpots, isPlaying]);
+  }, [boardSize, initFillSpots, isPlaying, player]);
 
+  // Actions to end game and restart it
   const restartGame = () => {
+    // Reset game state
     setGameSpeed(GameSpeed.Pause);
     setIsPlaying(false);
     setMoveDirection("right");
+    // Turn music off
+    player.pause();
   };
 
   // Controls what happens on each render of the running game
@@ -115,9 +189,7 @@ function runJingleSnake(boardSize, initFillSpots, initAvailabilityObject) {
       });
     } else {
       // Game over, reset to defaults
-      setIsPlaying(false);
-      setMoveDirection("right");
-      setGameSpeed(GameSpeed.Pause);
+      restartGame();
       // Capture highest score so far
       setHighestScore(Math.max(score, highestScore));
     }

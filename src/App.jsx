@@ -38,18 +38,6 @@ function App() {
   // Add snake at center of the preview board
   boardPreview[Math.floor(boardSize / 2)][Math.floor(boardSize / 2)] = 1;
 
-  // Hook used to run the game
-  const {
-    board,
-    startGame,
-    isPlaying,
-    songTitle,
-    score,
-    highestScore,
-    nLettersGuessed,
-    restartGame,
-  } = runJingleSnake(boardSize, initFillSpots, initAvailabilityObject);
-
   // Get Spotify API access token
   const [token, setToken] = useState(null);
   useEffect(() => {
@@ -60,6 +48,18 @@ function App() {
     }
     getToken();
   }, []);
+
+  // Hook used to run the game
+  const {
+    board,
+    startGame,
+    isPlaying,
+    songTitle,
+    score,
+    highestScore,
+    nLettersGuessed,
+    restartGame,
+  } = runJingleSnake(boardSize, initFillSpots, initAvailabilityObject, token);
 
   // Render page
   if (token === null) {
