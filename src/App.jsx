@@ -16,11 +16,11 @@ function App() {
   // Fill board with initial characters based on difficulty
   let fillPercentage;
   if (difficulty === "easy") {
-    fillPercentage = 0.05;
+    fillPercentage = 0.03;
   } else if (difficulty === "medium") {
-    fillPercentage = 0.1;
+    fillPercentage = 0.05;
   } else if (difficulty === "hard") {
-    fillPercentage = 0.25;
+    fillPercentage = 0.1;
   }
   let { fillSpots: initFillSpots, availabilityObject: initAvailabilityObject } =
     initFillBoardWithChars(boardSize, fillPercentage);
