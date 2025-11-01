@@ -252,6 +252,12 @@ export function nextLetterForBoard(
   );
   if (!charsOnBoard.hasOwnProperty(nextLetter)) {
     fill_char = nextLetter;
+  } else if (
+    (songTitle.toUpperCase()[nCharsCorrect] ==
+      String.fromCharCode(nextLetter - 2)) &
+    (charsOnBoard[nextLetter] < 2)
+  ) {
+    fill_char = nextLetter;
   }
   return { availabilityObject, fill_row, fill_col, fill_char };
 }
