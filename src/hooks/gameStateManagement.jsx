@@ -212,6 +212,7 @@ export function determineEventAtNextCell(board, snake, direction) {
 function nextLetterNeededOnBoard(songTitle, nLettersGuessed, nextSongTitle) {
   // Capital letters only
   songTitle = songTitle.toUpperCase();
+  nextSongTitle = nextSongTitle.toUpperCase();
   // Skip over any characters that are not A-Z
   const A2Z = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   nLettersGuessed += 1;
