@@ -5,6 +5,48 @@ import gameStateManager, {
 } from "./gameStateManagement";
 import useInterval from "./useInterval";
 
+async function clearSpotifyQueue(token, deviceID, player, add_dummy = true) {
+  const dummy_track_uri = "spotify:track:5XSKC4d0y0DfcGbvDOiL93";
+  if (add_dummy) {
+    // Add dummy track to end of queue so can have reference for when queue has been cleared
+    fetch(
+      "https://api.spotify.com/v1/me/player/queue?uri=" +
+        encodeURIComponent(dummy_track_uri) +
+        "&device_id=" +
+        deviceID,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      }
+    ).then(() => {
+      return clearSpotifyQueue(token, deviceID, player, false);
+    });
+  } else {
+    // Check what current song is playing
+    player.getCurrentState().then((state) => {
+      if (!state) {
+        console.error("User is not playing music through the Web Playback SDK");
+        return;
+      }
+      const current_track_uri = state.track_window.current_track.uri;
+      if (current_track_uri === dummy_track_uri) {
+        // queue has been cleared out, pause spotify (delay so that make sure all songs cleared first)
+        setTimeout(() => {
+          player.pause();
+        }, 2000);
+        return;
+      } else {
+        // Skip over song and continue clearing queue
+        player.nextTrack().then(() => {
+          return clearSpotifyQueue(token, deviceID, player, false);
+        });
+      }
+    });
+  }
+}
+
 // Used for setting time in ms that interval will use
 const GameSpeed = Object.freeze({
   Play: 150,
@@ -108,17 +150,16 @@ function runJingleSnake(
 
   // Actions to initialize game start
   const startGame = useCallback(() => {
-    let first_track_uri, first_track_name, second_track_uri, second_track_name;
-    const offset = Math.floor(Math.random() * (playlistLength - 2));
-    // Skip to next track to skip over anything left in queue before
+    const offset = Math.floor(Math.random() * (playlistLength - 1));
+    // Skip over next track
     player
       .nextTrack()
       .then(() => {
-        // Get random two songs to queue
+        // Get random song to queue
         return fetch(
           "https://api.spotify.com/v1/playlists/" +
             playlist +
-            "/tracks?fields=items.track%28uri%2Cname%29&limit=2&offset=" +
+            "/tracks?fields=items.track%28uri%2Cname%29&limit=1&offset=" +
             offset,
           {
             method: "GET",
@@ -129,21 +170,22 @@ function runJingleSnake(
         );
       })
       .then((result) => {
-        // Check that getting two songs from playlist was successful
+        // Check that getting song from playlist was successful
         if (!result.ok) {
-          console.error("Could not get songs from playlist");
+          console.error("Could not get song from playlist");
           return;
         }
         return result.json();
       })
       .then((data) => {
         // Save information for songs to queue
-        first_track_uri = data.items[0].track.uri;
-        first_track_name = data.items[0].track.name;
-        second_track_uri = data.items[1].track.uri;
-        second_track_name = data.items[1].track.name;
+        const first_track_uri = data.items[0].track.uri;
+        const first_track_name = data.items[0].track.name;
+        // Write out song title to console for debugging
+        console.clear();
+        console.log(first_track_name);
         // Queue first song
-        return fetch(
+        fetch(
           "https://api.spotify.com/v1/me/player/queue?uri=" +
             encodeURIComponent(first_track_uri) +
             "&device_id=" +
@@ -155,29 +197,11 @@ function runJingleSnake(
             },
           }
         );
-      })
-      .then(() => {
-        // Queue second song
-        return fetch(
-          "https://api.spotify.com/v1/me/player/queue?uri=" +
-            encodeURIComponent(second_track_uri) +
-            "&device_id=" +
-            deviceID,
-          {
-            method: "POST",
-            headers: {
-              Authorization: "Bearer " + token,
-            },
-          }
-        );
-      })
-      .then(() => {
         // Initialize score and initial song title
         setSongTitle(first_track_name);
-        setNextSongTitle(second_track_name);
+        setNextSongTitle(null);
         setNLettersGuessed(0);
         setScore(0);
-
         // update board to be right size and have initial characters
         dispatchBoardState({
           type: "start",
@@ -192,8 +216,10 @@ function runJingleSnake(
         setIsPlaying(true);
       })
       .then(() => {
-        // Skip to next song so that first song queued is playing
-        return player.nextTrack();
+        // Add delay to try to ensure song added to queue before switching song
+        setTimeout(() => {
+          player.nextTrack();
+        }, 2000);
       })
       .then(() => {
         setTimeout(() => {
@@ -208,9 +234,9 @@ function runJingleSnake(
               },
             }
           );
-        }, 1000);
+        }, 15000);
       });
-  }, [boardSize, initFillSpots, isPlaying, player, deviceID]);
+  }, [boardSize, initFillSpots, isPlaying, player, token, deviceID]);
 
   // Actions to end game and restart it
   const restartGame = useCallback(() => {
@@ -222,18 +248,21 @@ function runJingleSnake(
     player.pause();
   }, [player]);
 
+  const clearQueue = useCallback(() => {
+    clearSpotifyQueue(token, deviceID, player);
+  }, [player, token, deviceID]);
+
   // Controls what happens on each render of the running game
   const gameTick = useCallback(() => {
-    // Check state of title guessing
-    if (nCharsCorrect >= songTitle.length) {
-      // Finished the song title so skip to next song
+    // Check that next song is queued
+    if (nextSongTitle === null) {
+      // Switch from null so that this doesn't run multiple times if rendering faster than API calls
+      setNextSongTitle("in-progress");
       const offset = Math.floor(Math.random() * (playlistLength - 1));
-      let song2queue_name, song2queue_uri;
-      // Get random song to queue
       fetch(
         "https://api.spotify.com/v1/playlists/" +
           playlist +
-          "/tracks?fields=items.track%28uri%2Cname%29&limit=2&offset=" +
+          "/tracks?fields=items.track%28uri%2Cname%29&limit=1&offset=" +
           offset,
         {
           method: "GET",
@@ -251,13 +280,17 @@ function runJingleSnake(
           return result.json();
         })
         .then((data) => {
-          // Save information for songs to queue
-          song2queue_uri = data.items[0].track.uri;
-          song2queue_name = data.items[0].track.name;
-          // Queue first song
-          return fetch(
+          // Save information for song to queue
+          let track_uri = data.items[0].track.uri;
+          let track_name = data.items[0].track.name;
+          // Update next song title
+          setNextSongTitle(track_name);
+          // Print to console for debugging
+          console.log(track_name);
+          // Queue song
+          fetch(
             "https://api.spotify.com/v1/me/player/queue?uri=" +
-              encodeURIComponent(song2queue_uri) +
+              encodeURIComponent(track_uri) +
               "&device_id=" +
               deviceID,
             {
@@ -267,15 +300,17 @@ function runJingleSnake(
               },
             }
           );
-        })
+        });
+    }
+    // Check state of title guessing
+    if (nCharsCorrect >= songTitle.length) {
+      // Finished the song title so skip to next song
+      player
+        .nextTrack()
         .then(() => {
           // update current and next song title states
           setSongTitle(nextSongTitle);
-          setNextSongTitle(song2queue_name);
-        })
-        .then(() => {
-          // Go to next songe
-          return player.nextTrack();
+          setNextSongTitle(null);
         })
         .then(() => {
           setTimeout(() => {
@@ -290,7 +325,7 @@ function runJingleSnake(
                 },
               }
             );
-          }, 1000);
+          }, 15000);
         });
       // Increment score
       setScore((prevScore) => prevScore + 1);
@@ -414,6 +449,7 @@ function runJingleSnake(
     highestScore,
     nLettersGuessed,
     restartGame,
+    clearQueue,
   };
 }
 

@@ -60,6 +60,7 @@ function App() {
     highestScore,
     nLettersGuessed,
     restartGame,
+    clearQueue,
   } = runJingleSnake(
     boardSize,
     initFillSpots,
@@ -131,6 +132,15 @@ function App() {
                 onClick={startGame}
               >
                 Start New Game
+              </button>
+              <br></br>
+              <br></br>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={clearQueue}
+              >
+                Reset Spotify
               </button>
             </div>
           </div>
