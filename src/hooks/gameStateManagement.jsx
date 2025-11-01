@@ -28,7 +28,7 @@ function boardReducer(state, action) {
         }
       }
       // Make sure first letter is on the board
-      let firstLetter = action.firstLetter.charCodeAt(0) + 2;
+      let firstLetter = action.firstLetter.toUpperCase().charCodeAt(0) + 2;
       if (!newCharsOnBoard.hasOwnProperty(firstLetter)) {
         // Replace last letter added to board with first letter
         newCharsOnBoard[char] -= 1;
@@ -251,6 +251,12 @@ export function nextLetterForBoard(
     nextSongTitle
   );
   if (!charsOnBoard.hasOwnProperty(nextLetter)) {
+    fill_char = nextLetter;
+  } else if (
+    (songTitle.toUpperCase()[nCharsCorrect] ==
+      String.fromCharCode(nextLetter - 2)) &
+    (charsOnBoard[nextLetter] < 2)
+  ) {
     fill_char = nextLetter;
   }
   return { availabilityObject, fill_row, fill_col, fill_char };

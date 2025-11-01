@@ -44,11 +44,43 @@ function Difficulty({ difficulty, setDifficulty }) {
   );
 }
 
-function GameInputs({ boardSize, setBoardSize, difficulty, setDifficulty }) {
+function PlaylistSelect({ playlist, setPlaylist }) {
+  const updatePlaylist = (event) => {
+    const availSettings = ["1WH6WVBwPBz35ZbWsgCpgr"];
+    let newPlaylist = availSettings.includes(event.target.value)
+      ? event.target.value
+      : "1WH6WVBwPBz35ZbWsgCpgr";
+    setPlaylist(newPlaylist);
+  };
+  return (
+    <div>
+      <label htmlFor="playlist">Playlist</label>
+      <br></br>
+      <select
+        name="playlist"
+        id="playlist"
+        value={playlist}
+        onChange={updatePlaylist}
+      >
+        <option value="1WH6WVBwPBz35ZbWsgCpgr">Top Hits</option>
+      </select>
+    </div>
+  );
+}
+
+function GameInputs({
+  boardSize,
+  setBoardSize,
+  difficulty,
+  setDifficulty,
+  playlist,
+  setPlaylist,
+}) {
   return (
     <div className="d-flex justify-content-center gap-3 above_board">
       <BoardSize boardSize={boardSize} setBoardSize={setBoardSize} />
       <Difficulty difficulty={difficulty} setDifficulty={setDifficulty} />
+      <PlaylistSelect playlist={playlist} setPlaylist={setPlaylist} />
     </div>
   );
 }
