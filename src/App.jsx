@@ -11,6 +11,7 @@ function App() {
   // Game Settings
   const [boardSize, setBoardSize] = useState(9);
   const [difficulty, setDifficulty] = useState("easy");
+  const [playlist, setPlaylist] = useState("1WH6WVBwPBz35ZbWsgCpgr");
 
   // Fill board with initial characters based on difficulty
   let fillPercentage;
@@ -59,7 +60,13 @@ function App() {
     highestScore,
     nLettersGuessed,
     restartGame,
-  } = runJingleSnake(boardSize, initFillSpots, initAvailabilityObject, token);
+  } = runJingleSnake(
+    boardSize,
+    initFillSpots,
+    initAvailabilityObject,
+    token,
+    playlist
+  );
 
   // Render page
   if (token === null) {
@@ -84,6 +91,8 @@ function App() {
             setBoardSize={setBoardSize}
             difficulty={difficulty}
             setDifficulty={setDifficulty}
+            playlist={playlist}
+            setPlaylist={setPlaylist}
           />
         )}
         <br></br>

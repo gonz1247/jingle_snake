@@ -11,20 +11,12 @@ const GameSpeed = Object.freeze({
   Pause: null,
 });
 
-// Empty track object
-const track = {
-  name: "",
-  album: {
-    images: [{ url: "" }],
-  },
-  artists: [{ name: "" }],
-};
-
 function runJingleSnake(
   boardSize,
   initFillSpots,
   initAvailabilityObject,
-  token
+  token,
+  playlist
 ) {
   // Set up state variables
   const [isPlaying, setIsPlaying] = useState(false);
@@ -39,7 +31,8 @@ function runJingleSnake(
   const [nLettersGuessed, setNLettersGuessed] = useState(0);
   // Spotify hooks
   const [player, setPlayer] = useState(undefined);
-  const [current_track, setTrack] = useState(track);
+  const [deviceID, setDeviceID] = useState(null);
+  const [playlistLength, setPlaylistLength] = useState(null);
 
   // Game state manager
   let [
@@ -71,100 +64,242 @@ function runJingleSnake(
 
       player.addListener("ready", ({ device_id }) => {
         console.log("Ready with Device ID", device_id);
+        setDeviceID(device_id);
       });
 
       player.addListener("not_ready", ({ device_id }) => {
         console.log("Device ID has gone offline", device_id);
-      });
-
-      player.addListener("player_state_changed", (state) => {
-        if (!state) {
-          return;
-        }
-        setTrack(state.track_window.current_track);
+        setDeviceID(null);
       });
 
       player.connect();
     };
   }, [token]);
 
+  // Setup playlist
+  useEffect(() => {
+    if (!deviceID) {
+      // Spotify not connected
+      return;
+    }
+    // Get info about playlist
+    fetch(
+      "https://api.spotify.com/v1/playlists/" +
+        playlist +
+        "?fields=tracks.total",
+      {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      }
+    )
+      .then((result) => {
+        if (!result.ok) {
+          console.error("playlist not found");
+          return;
+        }
+        return result.json();
+      })
+      .then((data) => {
+        setPlaylistLength(data.tracks.total);
+      });
+  }, [deviceID, token, playlist]);
+
   // Actions to initialize game start
   const startGame = useCallback(() => {
-    // Turn on music player and get new song
-    player.getCurrentState().then((state) => {
-      if (!state) {
-        console.error("User is not playing music through the Web Playback SDK");
-        return;
-      }
+    let first_track_uri, first_track_name, second_track_uri, second_track_name;
+    const offset = Math.floor(Math.random() * (playlistLength - 2));
+    // Skip to next track to skip over anything left in queue before
+    player
+      .nextTrack()
+      .then(() => {
+        // Get random two songs to queue
+        return fetch(
+          "https://api.spotify.com/v1/playlists/" +
+            playlist +
+            "/tracks?fields=items.track%28uri%2Cname%29&limit=2&offset=" +
+            offset,
+          {
+            method: "GET",
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+          }
+        );
+      })
+      .then((result) => {
+        // Check that getting two songs from playlist was successful
+        if (!result.ok) {
+          console.error("Could not get songs from playlist");
+          return;
+        }
+        return result.json();
+      })
+      .then((data) => {
+        // Save information for songs to queue
+        first_track_uri = data.items[0].track.uri;
+        first_track_name = data.items[0].track.name;
+        second_track_uri = data.items[1].track.uri;
+        second_track_name = data.items[1].track.name;
+        // Queue first song
+        return fetch(
+          "https://api.spotify.com/v1/me/player/queue?uri=" +
+            encodeURIComponent(first_track_uri) +
+            "&device_id=" +
+            deviceID,
+          {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+          }
+        );
+      })
+      .then(() => {
+        // Queue second song
+        return fetch(
+          "https://api.spotify.com/v1/me/player/queue?uri=" +
+            encodeURIComponent(second_track_uri) +
+            "&device_id=" +
+            deviceID,
+          {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+          }
+        );
+      })
+      .then(() => {
+        // Initialize score and initial song title
+        setSongTitle(first_track_name);
+        setNextSongTitle(second_track_name);
+        setNLettersGuessed(0);
+        setScore(0);
 
-      // Get song titles of first and second songs in queue
-      const first_track = state.track_window.next_tracks[0].name;
-
-      // Initialize score and initial song title
-      setSongTitle(first_track);
-      setNextSongTitle(null);
-      setNLettersGuessed(0);
-      setScore(0);
-
-      // update board to be right size and have initial characters
-      dispatchBoardState({
-        type: "start",
-        newBoardSize: boardSize,
-        fillSpots: initFillSpots,
-        availabilityObject: initAvailabilityObject,
-        nLettersGuessed: 0,
-        firstLetter: first_track[0],
+        // update board to be right size and have initial characters
+        dispatchBoardState({
+          type: "start",
+          newBoardSize: boardSize,
+          fillSpots: initFillSpots,
+          availabilityObject: initAvailabilityObject,
+          nLettersGuessed: 0,
+          firstLetter: first_track_name[0],
+        });
+        // Turn game speed to normal and start game
+        setGameSpeed(GameSpeed.Play);
+        setIsPlaying(true);
+      })
+      .then(() => {
+        // Skip to next song so that first song queued is playing
+        return player.nextTrack();
+      })
+      .then(() => {
+        setTimeout(() => {
+          // Set song to repeat (delay ensure it happens after song was been switched)
+          fetch(
+            "https://api.spotify.com/v1/me/player/repeat?state=track&device_id=" +
+              deviceID,
+            {
+              method: "PUT",
+              headers: {
+                Authorization: "Bearer " + token,
+              },
+            }
+          );
+        }, 1000);
       });
-      // Turn game speed to normal and start game
-      setGameSpeed(GameSpeed.Play);
-      setIsPlaying(true);
-    });
-    player.nextTrack();
-  }, [boardSize, initFillSpots, isPlaying, player]);
+  }, [boardSize, initFillSpots, isPlaying, player, deviceID]);
 
   // Actions to end game and restart it
-  const restartGame = () => {
+  const restartGame = useCallback(() => {
     // Reset game state
     setGameSpeed(GameSpeed.Pause);
     setIsPlaying(false);
     setMoveDirection("right");
     // Turn music off
     player.pause();
-  };
+  }, [player]);
 
   // Controls what happens on each render of the running game
   const gameTick = useCallback(() => {
-    // Check actual songs being played in Spotify
-    player.getCurrentState().then((state) => {
-      if (!state) {
-        console.error("User is not playing music through the Web Playback SDK");
-        return;
-      }
-
-      // Get song titles of current and next song in queue
-      const actual_current = state.track_window.current_track.name;
-      const actual_next = state.track_window.next_tracks[0].name;
-
-      if (nextSongTitle === null) {
-        // song was recently switched so need to set next song
-        setNextSongTitle(actual_next);
-        return;
-      }
-    });
     // Check state of title guessing
     if (nCharsCorrect >= songTitle.length) {
       // Finished the song title so skip to next song
-      setSongTitle(nextSongTitle);
-      setNextSongTitle(null);
-      player.nextTrack();
-      // Increment score (1 for correct letter and 5 for completing title)
-      setScore(score + 6);
+      const offset = Math.floor(Math.random() * (playlistLength - 1));
+      let song2queue_name, song2queue_uri;
+      // Get random song to queue
+      fetch(
+        "https://api.spotify.com/v1/playlists/" +
+          playlist +
+          "/tracks?fields=items.track%28uri%2Cname%29&limit=2&offset=" +
+          offset,
+        {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      )
+        .then((result) => {
+          // Check that getting song from playlist was successful
+          if (!result.ok) {
+            console.error("Could not get song from playlist");
+            return;
+          }
+          return result.json();
+        })
+        .then((data) => {
+          // Save information for songs to queue
+          song2queue_uri = data.items[0].track.uri;
+          song2queue_name = data.items[0].track.name;
+          // Queue first song
+          return fetch(
+            "https://api.spotify.com/v1/me/player/queue?uri=" +
+              encodeURIComponent(song2queue_uri) +
+              "&device_id=" +
+              deviceID,
+            {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer " + token,
+              },
+            }
+          );
+        })
+        .then(() => {
+          // update current and next song title states
+          setSongTitle(nextSongTitle);
+          setNextSongTitle(song2queue_name);
+        })
+        .then(() => {
+          // Go to next songe
+          return player.nextTrack();
+        })
+        .then(() => {
+          setTimeout(() => {
+            // Set song to repeat (delay ensure it happens after song was been switched)
+            fetch(
+              "https://api.spotify.com/v1/me/player/repeat?state=track&device_id=" +
+                deviceID,
+              {
+                method: "PUT",
+                headers: {
+                  Authorization: "Bearer " + token,
+                },
+              }
+            );
+          }, 1000);
+        });
+      // Increment score
+      setScore((prevScore) => prevScore + 1);
       // Reset number of characters guessed
       nCharsCorrect = 0;
       setNLettersGuessed(nCharsCorrect);
     } else if (nCharsCorrect != nLettersGuessed) {
-      // Increment score (1 for correct letter)
-      setScore(score + 1);
+      // Increment score
+      setScore((prevScore) => prevScore + 1);
       // Update number of characters guessed
       setNLettersGuessed(nCharsCorrect);
     }
@@ -218,6 +353,7 @@ function runJingleSnake(
     availabilityObject,
     charsOnBoard,
     moveDirection,
+    nextSongTitle,
   ]);
 
   // Interval to create continuous re-rendering

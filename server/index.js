@@ -26,7 +26,8 @@ const generateRandomString = (length) => {
 const spotify_redirect_uri = "http://127.0.0.1:5173/auth/callback";
 // User approval of application
 app.get("/auth/login", (req, res) => {
-  const scope = "streaming user-read-email user-read-private";
+  const scope =
+    "streaming user-read-email user-read-private user-modify-playback-state playlist-read-private";
 
   const state = generateRandomString(16);
 

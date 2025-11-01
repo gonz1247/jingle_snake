@@ -28,7 +28,7 @@ function boardReducer(state, action) {
         }
       }
       // Make sure first letter is on the board
-      let firstLetter = action.firstLetter.charCodeAt(0) + 2;
+      let firstLetter = action.firstLetter.toUpperCase().charCodeAt(0) + 2;
       if (!newCharsOnBoard.hasOwnProperty(firstLetter)) {
         // Replace last letter added to board with first letter
         newCharsOnBoard[char] -= 1;
