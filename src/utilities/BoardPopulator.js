@@ -1,3 +1,6 @@
+export const invalid_chars = "()[]:;,.-_*`~ \"'";
+export const random_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&";
+
 export function initFillBoardWithChars(boardSize, fillPercentage) {
   fillPercentage = Math.min(Math.max(0, fillPercentage), 1);
   const n_fill = Math.max(
@@ -56,10 +59,10 @@ export function fillCellWithChar(availability_object) {
   const boardSize = Math.sqrt(availability_object.avail_cells_array.length);
   const row = Math.floor(cell_num / boardSize);
   const col = cell_num % boardSize;
-  // Get random number representing ASCII character with offset of two
-  const A = 65; // ASCII
-  const Z = 90; // ASCII
-  const char = Math.floor(Math.random() * (Z - A + 1)) + A + 2;
+  // Get ASCII representation of random (typical) character
+  const char = random_chars.charCodeAt(
+    Math.floor(Math.random() * random_chars.length)
+  );
   return {
     availability_object: availability_object,
     fill_row: row,

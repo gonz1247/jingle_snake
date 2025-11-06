@@ -11,7 +11,7 @@ function Cell({ value }) {
     cellDisplay = "#";
     cellType = "char";
   } else {
-    cellDisplay = String.fromCharCode(value - 2);
+    cellDisplay = String.fromCharCode(value);
     cellType = "char";
   }
   return <div className={"cell col " + cellType}>{cellDisplay}</div>;

@@ -3,6 +3,7 @@ import {
   fillCellWithChar,
   removeCellAvailability,
   addCellAvailability,
+  invalid_chars,
 } from "../utilities/BoardPopulator";
 
 function boardReducer(state, action) {
@@ -28,7 +29,7 @@ function boardReducer(state, action) {
         }
       }
       // Make sure first letter is on the board
-      let firstLetter = action.firstLetter.toUpperCase().charCodeAt(0) + 2;
+      let firstLetter = action.firstLetter.toUpperCase().charCodeAt(0);
       if (!newCharsOnBoard.hasOwnProperty(firstLetter)) {
         // Replace last letter added to board with first letter
         newCharsOnBoard[char] -= 1;
@@ -102,15 +103,14 @@ function boardReducer(state, action) {
       let nLettersGuessed = action.nLettersGuessed;
       // Increment score and progress if applicable
       let eaten_char = String.fromCharCode(
-        updatedBoard[action.next_row][action.next_col] - 2
+        updatedBoard[action.next_row][action.next_col]
       );
       if (eaten_char === songTitle[nLettersGuessed]) {
-        // Skip over any characters that are not A-Z
-        const A2Z = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        // Skip over any characters that are listed as invalid
         nLettersGuessed += 1;
         while (
           nLettersGuessed < songTitle.length &&
-          !A2Z.includes(songTitle[nLettersGuessed])
+          invalid_chars.includes(songTitle[nLettersGuessed])
         ) {
           nLettersGuessed += 1;
         }
@@ -212,21 +212,24 @@ export function determineEventAtNextCell(board, snake, direction) {
 function nextLetterNeededOnBoard(songTitle, nLettersGuessed, nextSongTitle) {
   // Capital letters only
   songTitle = songTitle.toUpperCase();
-  nextSongTitle = nextSongTitle.toUpperCase();
-  // Skip over any characters that are not A-Z
-  const A2Z = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  // Skip over any characters that are listed as invalid
   nLettersGuessed += 1;
   while (
     nLettersGuessed < songTitle.length &&
-    !A2Z.includes(songTitle[nLettersGuessed])
+    invalid_chars.includes(songTitle[nLettersGuessed])
   ) {
     nLettersGuessed += 1;
   }
   if (nLettersGuessed >= songTitle.length) {
-    // First letter of next word will be next
-    return nextSongTitle.charCodeAt(0) + 2;
+    // Recursively call funcion on next song instead
+    if (nextSongTitle === null) {
+      // Somehow the next song contained only invalid chars so just return A
+      return "A".charCodeAt(0);
+    } else {
+      return nextLetterNeededOnBoard(nextSongTitle, -1, null);
+    }
   } else {
-    return songTitle.charCodeAt(nLettersGuessed) + 2;
+    return songTitle.charCodeAt(nLettersGuessed);
   }
 }
 
@@ -255,7 +258,7 @@ export function nextLetterForBoard(
     fill_char = nextLetter;
   } else if (
     (songTitle.toUpperCase()[nCharsCorrect] ==
-      String.fromCharCode(nextLetter - 2)) &
+      String.fromCharCode(nextLetter)) &
     (charsOnBoard[nextLetter] < 2)
   ) {
     fill_char = nextLetter;
