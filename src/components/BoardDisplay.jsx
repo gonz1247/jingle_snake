@@ -1,10 +1,13 @@
 function Cell({ value }) {
   let cellDisplay;
   let cellType;
-  if (value === 0) {
+  if (value === -1) {
     cellDisplay = "";
     cellType = "empty";
-  } else if (value === 1) {
+  } else if (value === -2) {
+    cellDisplay = "";
+    cellType = "snake head";
+  } else if (value === -3) {
     cellDisplay = "";
     cellType = "snake";
   } else if (value === "#") {

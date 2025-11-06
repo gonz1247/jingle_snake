@@ -12,7 +12,7 @@ function boardReducer(state, action) {
       // Initialize empty board
       let newBoard = Array(action.newBoardSize)
         .fill(null)
-        .map(() => Array(action.newBoardSize).fill(0));
+        .map(() => Array(action.newBoardSize).fill(-1));
       // Initialize object (i.e., hash map) of letters on board
       let newCharsOnBoard = {};
       // Populate board with random letterslet char_row = action.fillSpots[i].row;
@@ -39,10 +39,10 @@ function boardReducer(state, action) {
         newBoard[char_row][char_col] = firstLetter;
         newCharsOnBoard[firstLetter] = 1;
       }
-      // Add snake marker at center of board (this could override a character which is okay for now)
+      // Add snake head marker at center of board
       const newRow = Math.floor(action.newBoardSize / 2);
       const newCol = Math.floor(action.newBoardSize / 2);
-      newBoard[newRow][newCol] = 1;
+      newBoard[newRow][newCol] = -2;
       // Create snake deque
       let newSnake = [[newRow, newCol]];
       // Assume initial availability object is representative of what gave initial fill spots and snake location
@@ -69,7 +69,7 @@ function boardReducer(state, action) {
       };
       // Remove snake tail from previous spot on the board
       const [prev_row, prev_col] = updatedSnake.pop();
-      updatedBoard[prev_row][prev_col] = 0;
+      updatedBoard[prev_row][prev_col] = -1;
       let cell_num = prev_row * updatedBoard.length + prev_col;
       updatedAvailabilityObject = addCellAvailability(
         cell_num,
@@ -77,7 +77,11 @@ function boardReducer(state, action) {
       );
       // Move snake head to next spot on the board
       updatedSnake.unshift([action.next_row, action.next_col]);
-      updatedBoard[action.next_row][action.next_col] = 1;
+      updatedBoard[action.next_row][action.next_col] = -2;
+      if (updatedSnake.length > 1) {
+        // update previous head to be body now
+        updatedBoard[updatedSnake[1][0]][updatedSnake[1][1]] = -3;
+      }
       cell_num = action.next_row * updatedBoard.length + action.next_col;
       updatedAvailabilityObject = removeCellAvailability(
         cell_num,
@@ -126,7 +130,11 @@ function boardReducer(state, action) {
       }
       // Move snake head to next spot on the board
       updatedSnake.unshift([action.next_row, action.next_col]);
-      updatedBoard[action.next_row][action.next_col] = 1;
+      updatedBoard[action.next_row][action.next_col] = -2;
+      if (updatedSnake.length > 1) {
+        // update previous head to be body now
+        updatedBoard[updatedSnake[1][0]][updatedSnake[1][1]] = -3;
+      }
       // No need update snake tail
       // Add new character to the board
       updatedBoard[action.fill_row][action.fill_col] = action.fill_char;
@@ -177,11 +185,12 @@ export function determineEventAtNextCell(board, snake, direction) {
   next_col = (next_col + board.length) % board.length;
 
   // Evaluate value of next cell and what event will occur there
+  // -1 -> empty, -2 -> snake head, -3 -> snake body, else character code
   const next_cell_val = board[next_row][next_col];
-  if (next_cell_val == 0) {
+  if (next_cell_val == -1) {
     // open space
     return { next_event: "move", next_row: next_row, next_col: next_col };
-  } else if (next_cell_val == 1) {
+  } else if (next_cell_val == -3) {
     // Check that not colliding with tail
     const tail_row = snake[snake.length - 1][0];
     const tail_col = snake[snake.length - 1][1];
@@ -200,9 +209,9 @@ export function determineEventAtNextCell(board, snake, direction) {
         next_col: next_col,
       };
     }
-  } else if (next_cell_val <= 0) {
+  } else if (next_cell_val == -2) {
     // A bug must exist somewhere
-    throw new Error("Board has a negative cell value");
+    throw new Error("Colliding with head");
   } else {
     // Next cell has a character that snake will eat
     return { next_event: "grow", next_row: next_row, next_col: next_col };

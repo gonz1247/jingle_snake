@@ -28,7 +28,7 @@ function App() {
   // Preview board that can be updated in real time when selecting board size and difficulty
   const boardPreview = Array(boardSize)
     .fill(null)
-    .map(() => Array(boardSize).fill(0));
+    .map(() => Array(boardSize).fill(-1));
   // Populate board with random letters
   for (let i = 0; i < initFillSpots.length; i++) {
     let char_row = initFillSpots[i].row;
@@ -36,8 +36,8 @@ function App() {
     // Add random placeholder for now
     boardPreview[char_row][char_col] = "#";
   }
-  // Add snake at center of the preview board
-  boardPreview[Math.floor(boardSize / 2)][Math.floor(boardSize / 2)] = 1;
+  // Add snake head at center of the preview board
+  boardPreview[Math.floor(boardSize / 2)][Math.floor(boardSize / 2)] = -2;
 
   // Get Spotify API access token
   const [token, setToken] = useState(null);

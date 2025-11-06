@@ -15,6 +15,10 @@
     background-color: teal;
 }
 
+.cell.snake.head{
+    border-radius: 50%;
+}
+
 .above_board {
     height: 45px;
 }
