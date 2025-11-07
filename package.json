@@ -1,0 +1,26 @@
+{
+  "name": "jingle_snake",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start-server-dev": "npm run dev --prefix server",
+    "start-client-dev": "npm run dev --prefix client",
+    "dev": "run-p start-server-dev start-client-dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gonz1247/jingle_snake.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gonz1247/jingle_snake/issues"
+  },
+  "homepage": "https://github.com/gonz1247/jingle_snake#readme",
+  "dependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}
