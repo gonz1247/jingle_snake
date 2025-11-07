@@ -10,7 +10,7 @@ import SpotifyLogin from "../components/SpotifyLogin";
 
 export default function MainPage() {
   // Game Settings
-  const [boardSize, setBoardSize] = useState(9);
+  const [boardSize, setBoardSize] = useState(13);
   const [difficulty, setDifficulty] = useState("easy");
   const [playlist, setPlaylist] = useState("1WH6WVBwPBz35ZbWsgCpgr");
 
