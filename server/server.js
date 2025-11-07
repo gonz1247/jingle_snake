@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import request from "request";
+import cors from "cors";
 
 // Spotify API Credentials
 dotenv.config();
@@ -10,6 +11,12 @@ const spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 // Server setup
 const app = express();
 const port = 5000;
+
+// Setup server to accept request from front-end
+const corsOptions = {
+  origin: "http://127.0.0.1:5173",
+};
+app.use(cors(corsOptions));
 
 // Random state string
 const generateRandomString = (length) => {
