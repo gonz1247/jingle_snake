@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import gameStateManager, {
+import useGameStateManager, {
   determineEventAtNextCell,
   nextLetterForBoard,
-} from "./gameStateManagement";
+} from "./useGameStateManagement";
 import useInterval from "./useInterval";
 
 async function clearSpotifyQueue(token, deviceID, player, add_dummy = true) {
@@ -53,7 +53,7 @@ const GameSpeed = Object.freeze({
   Pause: null,
 });
 
-function runJingleSnake(
+export default function useRunJingleSnake(
   boardSize,
   initFillSpots,
   initAvailabilityObject,
@@ -80,7 +80,7 @@ function runJingleSnake(
   let [
     { board, snake, availabilityObject, nCharsCorrect, charsOnBoard },
     dispatchBoardState,
-  ] = gameStateManager();
+  ] = useGameStateManager();
 
   // Enable Spotify functionality
   useEffect(() => {
@@ -236,7 +236,17 @@ function runJingleSnake(
           );
         }, 15000);
       });
-  }, [boardSize, initFillSpots, isPlaying, player, token, deviceID]);
+  }, [
+    boardSize,
+    initFillSpots,
+    player,
+    token,
+    deviceID,
+    dispatchBoardState,
+    initAvailabilityObject,
+    playlist,
+    playlistLength,
+  ]);
 
   // Actions to end game and restart it
   const restartGame = useCallback(() => {
@@ -452,5 +462,3 @@ function runJingleSnake(
     clearQueue,
   };
 }
-
-export default runJingleSnake;

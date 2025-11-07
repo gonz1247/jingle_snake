@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 import GameInputs from "../components/GameInputs";
 import WordProgessDisplay from "../components/WordProgessDisplay";
 import BoardDisplay from "../components/BoardDisplay";
-import runJingleSnake from "../hooks/runJingleSnake";
+import useRunJingleSnake from "../hooks/useRunJingleSnake";
 import { initFillBoardWithChars } from "../utilities/BoardPopulator";
 import SpotifyLogin from "../components/SpotifyLogin";
 
@@ -62,7 +62,7 @@ export default function MainPage() {
     nLettersGuessed,
     restartGame,
     clearQueue,
-  } = runJingleSnake(
+  } = useRunJingleSnake(
     boardSize,
     initFillSpots,
     initAvailabilityObject,

@@ -22,7 +22,7 @@ function boardReducer(state, action) {
         char_col = action.fillSpots[i].col;
         char = action.fillSpots[i].char;
         newBoard[char_row][char_col] = char;
-        if (newCharsOnBoard.hasOwnProperty(char)) {
+        if (Object.hasOwn(newCharsOnBoard, char)) {
           newCharsOnBoard[char] += 1;
         } else {
           newCharsOnBoard[char] = 1;
@@ -30,7 +30,7 @@ function boardReducer(state, action) {
       }
       // Make sure first letter is on the board
       let firstLetter = action.firstLetter.toUpperCase().charCodeAt(0);
-      if (!newCharsOnBoard.hasOwnProperty(firstLetter)) {
+      if (!Object.hasOwn(newCharsOnBoard, firstLetter)) {
         // Replace last letter added to board with first letter
         newCharsOnBoard[char] -= 1;
         if (newCharsOnBoard[char] === 0) {
@@ -139,7 +139,7 @@ function boardReducer(state, action) {
       // Add new character to the board
       updatedBoard[action.fill_row][action.fill_col] = action.fill_char;
       // Add new char to character hash map
-      if (updatedCharsOnBoard.hasOwnProperty(action.fill_char)) {
+      if (Object.hasOwn(updatedCharsOnBoard, action.fill_char)) {
         updatedCharsOnBoard[action.fill_char] += 1;
       } else {
         updatedCharsOnBoard[action.fill_char] = 1;
@@ -263,7 +263,7 @@ export function nextLetterForBoard(
     nCharsCorrect,
     nextSongTitle
   );
-  if (!charsOnBoard.hasOwnProperty(nextLetter)) {
+  if (!Object.hasOwn(charsOnBoard, nextLetter)) {
     fill_char = nextLetter;
   } else if (
     (songTitle.toUpperCase()[nCharsCorrect] ==
@@ -275,7 +275,7 @@ export function nextLetterForBoard(
   return { availabilityObject, fill_row, fill_col, fill_char };
 }
 
-export default function gameStateManager() {
+export default function useGameStateManager() {
   const [boardState, dispatchBoardState] = useReducer(boardReducer, {
     board: null,
     snake: null,
