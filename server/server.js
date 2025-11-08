@@ -29,7 +29,7 @@ const generateRandomString = (length) => {
   return text;
 };
 
-const spotify_redirect_uri = `${process.env.JINGLE_SNAKE_DOMAIN}/auth/callback`;
+const spotify_redirect_uri = `${process.env.CALLBACK_BASE}/auth/callback`;
 // User approval of application
 app.get("/auth/login", (req, res) => {
   const scope =
@@ -77,7 +77,7 @@ app.get("/auth/callback", (req, res) => {
   request.post(authOptions, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       access_token = body.access_token;
-      res.redirect("/");
+      res.redirect(`${process.env.JINGLE_SNAKE_DOMAIN}`);
     }
   });
 });

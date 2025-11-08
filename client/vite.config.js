@@ -1,18 +1,15 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: `${process.env.JINGLE_SNAKE_HOST}`,
-    port: parseInt(process.env.JINGLE_SNAKE_PORT),
+    host: "127.0.0.1",
+    port: 5173,
     proxy: {
       "/auth": {
-        target: `${process.env.SERVER_TARGET}`,
+        target: "http://127.0.0.1:5000",
       },
     },
   },
