@@ -46,7 +46,13 @@ function Difficulty({ difficulty, setDifficulty }) {
 
 function PlaylistSelect({ playlist, setPlaylist }) {
   const updatePlaylist = (event) => {
-    const availSettings = ["1WH6WVBwPBz35ZbWsgCpgr"];
+    const availSettings = [
+      "1WH6WVBwPBz35ZbWsgCpgr",
+      "62y3BHKehWnb1hlaPclDAA",
+      "6UxCcu2alE2WBSpYeoDfiY",
+      "1ti3v0lLrJ4KhSTuxt4loZ",
+      "19PgP2QSGPcm6Ve8VhbtpG"
+    ];
     let newPlaylist = availSettings.includes(event.target.value)
       ? event.target.value
       : "1WH6WVBwPBz35ZbWsgCpgr";
@@ -62,7 +68,11 @@ function PlaylistSelect({ playlist, setPlaylist }) {
         value={playlist}
         onChange={updatePlaylist}
       >
-        <option value="1WH6WVBwPBz35ZbWsgCpgr">Top Hits</option>
+        <option value="1WH6WVBwPBz35ZbWsgCpgr">Pop</option>
+        <option value="62y3BHKehWnb1hlaPclDAA">Hip Hop</option>
+        <option value="6UxCcu2alE2WBSpYeoDfiY">Country</option>
+        <option value="1ti3v0lLrJ4KhSTuxt4loZ">Rock</option>
+        <option value="19PgP2QSGPcm6Ve8VhbtpG">80s</option>
       </select>
     </div>
   );
