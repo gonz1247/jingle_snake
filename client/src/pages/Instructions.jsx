@@ -1,20 +1,22 @@
+import { Link } from "react-router-dom";
+
 export default function Instructions() {
   return (
     <>
       <h1>Jingle Snake Instructions</h1>
-      <a href="/">Main Page</a>
+      <Link to="/">Main Page</Link>
       <p>
         Inspired by the classic{" "}
-        <a
-          href="https://en.wikipedia.org/wiki/Snake_(video_game_genre)"
+        <Link
+          to="https://en.wikipedia.org/wiki/Snake_(video_game_genre)"
           target="_blank"
         >
           Snake game
-        </a>{" "}
+        </Link>{" "}
         and newer{" "}
-        <a href="https://hitstergame.com/en-us/" target="_blank">
+        <Link to="https://hitstergame.com/en-us/" target="_blank">
           Hitser game
-        </a>
+        </Link>
         {"."}
         <br></br>
         <br></br>

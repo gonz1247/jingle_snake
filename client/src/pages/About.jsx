@@ -1,14 +1,16 @@
+import { Link } from "react-router-dom";
+
 export default function About() {
   return (
     <>
       <h1>About</h1>
-      <a href="/">Main Page</a>
+      <Link to="/">Main Page</Link>
       <p>
         Thank you for visiting the about page to learn more about Jingle Snake!
         My name is{" "}
-        <a href="https://github.com/gonz1247/" target="_blank">
+        <Link to="https://github.com/gonz1247/" target="_blank">
           Gonzo
-        </a>{" "}
+        </Link>{" "}
         and I developed this game as a learning exercise for using javascript
         and React. I am currently in the process of trying to pivot my career
         from aerospace engineering to software engineering and have been using
