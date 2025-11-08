@@ -29,7 +29,7 @@ const generateRandomString = (length) => {
   return text;
 };
 
-const spotify_redirect_uri = `${process.env.JINGLE_SNAKE_DOMAIN}/auth/callback`;
+const spotify_redirect_uri = `${process.env.CALLBACK_BASE}/auth/callback`;
 // User approval of application
 app.get("/auth/login", (req, res) => {
   console.log("At auth/login");
