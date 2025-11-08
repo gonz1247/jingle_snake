@@ -10,11 +10,10 @@ const spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 
 // Server setup
 const app = express();
-const port = 5000;
 
 // Setup server to accept request from front-end
 const corsOptions = {
-  origin: "http://127.0.0.1:5173",
+  origin: `${process.env.JINGLE_SNAKE_HOST}:${process.env.JINGLE_SNAKE_PORT}`,
 };
 app.use(cors(corsOptions));
 
@@ -30,7 +29,7 @@ const generateRandomString = (length) => {
   return text;
 };
 
-const spotify_redirect_uri = "http://127.0.0.1:5173/auth/callback";
+const spotify_redirect_uri = `${process.env.JINGLE_SNAKE_HOST}:${process.env.JINGLE_SNAKE_PORT}/auth/callback`;
 // User approval of application
 app.get("/auth/login", (req, res) => {
   const scope =
@@ -91,6 +90,8 @@ app.get("/auth/token", (req, res) => {
 });
 
 // Set up listener
-app.listen(port, () => {
-  console.log(`Listening at http://127.0.0.1:${port}`);
+app.listen(parseInt(process.env.SERVER_PORT), () => {
+  console.log(
+    `Listening at ${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`
+  );
 });
