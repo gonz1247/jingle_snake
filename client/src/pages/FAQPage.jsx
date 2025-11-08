@@ -1,8 +1,10 @@
+import { Link } from "react-router-dom";
+
 export default function FAQPage() {
   return (
     <>
       <h1>Frequently Asked Questions</h1>
-      <a href="/">Main Page</a>
+      <Link to="/">Main Page</Link>
       <details>
         <summary>Do I need a Spotify account to play Jingle Snake?</summary>
         <fieldset>
@@ -33,12 +35,12 @@ export default function FAQPage() {
         <fieldset>
           <p>
             The song titles are printed to the{" "}
-            <a
-              href="https://developer.chrome.com/docs/devtools/console"
+            <Link
+              to="https://developer.chrome.com/docs/devtools/console"
               target="_blank"
             >
               web console
-            </a>{" "}
+            </Link>{" "}
             as as they are added to the queue. Console is cleared at the start
             of each game.
           </p>
