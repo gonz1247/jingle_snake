@@ -32,7 +32,6 @@ const generateRandomString = (length) => {
 const spotify_redirect_uri = `${process.env.CALLBACK_BASE}/auth/callback`;
 // User approval of application
 app.get("/auth/login", (req, res) => {
-  console.log("At auth/login");
   const scope =
     "streaming user-read-email user-read-private user-modify-playback-state playlist-read-private";
 
@@ -46,7 +45,6 @@ app.get("/auth/login", (req, res) => {
     state: state,
   });
 
-  console.log("Sending to Spotify");
   res.redirect(
     "https://accounts.spotify.com/authorize/?" +
       auth_query_parameters.toString()
@@ -56,7 +54,6 @@ app.get("/auth/login", (req, res) => {
 // Generate access token
 global.access_token = null;
 app.get("/auth/callback", (req, res) => {
-  console.log("At auth/callback");
   const code = req.query.code;
 
   const authOptions = {
@@ -80,7 +77,6 @@ app.get("/auth/callback", (req, res) => {
   request.post(authOptions, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       access_token = body.access_token;
-      console.error("Back to Jingle Snake");
       res.redirect(`${process.env.JINGLE_SNAKE_DOMAIN}`);
     }
   });
