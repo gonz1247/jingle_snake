@@ -80,9 +80,9 @@ app.get("/auth/callback", (req, res) => {
   request.post(authOptions, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       access_token = body.access_token;
-      res.redirect("/");
+      console.error("Back to Jingle Snake");
+      res.redirect(`${process.env.JINGLE_SNAKE_DOMAIN}`);
     }
-    console.error("Something went wrong")
   });
 });
 

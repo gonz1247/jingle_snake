@@ -8,6 +8,8 @@ import useRunJingleSnake from "../hooks/useRunJingleSnake";
 import { initFillBoardWithChars } from "../utilities/BoardPopulator";
 import SpotifyLogin from "../components/SpotifyLogin";
 
+const server_target = import.meta.env.VITE_SERVER_TARGET;
+
 export default function MainPage() {
   // Game Settings
   const [boardSize, setBoardSize] = useState(13);
@@ -44,7 +46,7 @@ export default function MainPage() {
   const [token, setToken] = useState(null);
   useEffect(() => {
     async function getToken() {
-      const response = await fetch("/auth/token");
+      const response = await fetch(`${server_target}/auth/token`);
       const json = await response.json();
       setToken(json.access_token);
     }
