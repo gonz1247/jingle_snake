@@ -13,7 +13,7 @@ const app = express();
 
 // Setup server to accept request from front-end
 const corsOptions = {
-  origin: `${process.env.JINGLE_SNAKE_HOST}:${process.env.JINGLE_SNAKE_PORT}`,
+  origin: `${process.env.JINGLE_SNAKE_DOMAIN}`,
 };
 app.use(cors(corsOptions));
 
@@ -29,7 +29,7 @@ const generateRandomString = (length) => {
   return text;
 };
 
-const spotify_redirect_uri = `${process.env.JINGLE_SNAKE_HOST}:${process.env.JINGLE_SNAKE_PORT}/auth/callback`;
+const spotify_redirect_uri = `${process.env.JINGLE_SNAKE_DOMAIN}/auth/callback`;
 // User approval of application
 app.get("/auth/login", (req, res) => {
   const scope =
@@ -91,7 +91,5 @@ app.get("/auth/token", (req, res) => {
 
 // Set up listener
 app.listen(parseInt(process.env.SERVER_PORT), () => {
-  console.log(
-    `Listening at ${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`
-  );
+  console.log(`Listening at port ${process.env.SERVER_PORT}`);
 });

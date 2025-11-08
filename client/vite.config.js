@@ -12,7 +12,7 @@ export default defineConfig({
     port: parseInt(process.env.JINGLE_SNAKE_PORT),
     proxy: {
       "/auth": {
-        target: `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
+        target: `${process.env.SERVER_TARGET}`,
       },
     },
   },
