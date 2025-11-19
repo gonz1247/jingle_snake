@@ -6,6 +6,9 @@ Inspired by classic [Snake game](https://en.wikipedia.org/wiki/Snake_(video_game
 
 Objective of the game is guess the song title by spelling out the word by eating the correct letters. Eating wrong letters will grow the snake and potentially make it harder to get to next correct letter.
 
+## Live Version
+Please check out the live version of Jingle Snake at https://jingle-snake.onrender.com. The game is fully functional, but there are still some shortcomings that can comeup (see the FAQ page for more details). Also note that a Spotify Premium account is needed to play Jingle Snake.
+
 ## Setup to run locally
 - Clone repository to your local machine 
 - Install dependencies
