@@ -19,7 +19,7 @@ async function clearSpotifyQueue(token, deviceID, player, add_dummy = true) {
         headers: {
           Authorization: "Bearer " + token,
         },
-      }
+      },
     ).then(() => {
       return clearSpotifyQueue(token, deviceID, player, false);
     });
@@ -47,6 +47,53 @@ async function clearSpotifyQueue(token, deviceID, player, add_dummy = true) {
   }
 }
 
+async function queueTrack(token, deviceID, playlist, playlistLength) {
+  const offset = Math.floor(Math.random() * (playlistLength - 1));
+  const result = await fetch(
+    "https://api.spotify.com/v1/playlists/" +
+      playlist +
+      "/tracks?fields=items.track%28uri%2Cname%29&limit=1&offset=" +
+      offset,
+    {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    },
+  );
+
+  if (!result.ok) {
+    console.error("Could not get song from playlist");
+    return;
+  }
+  const data = await result.json();
+
+  // Unpack track info
+  let track_uri = data.items[0].track.uri;
+  let track_name = data.items[0].track.name;
+  // Only queue songs with titles longer than 2 characters
+  if (track_name.length > 2) {
+    // Queue song
+    await fetch(
+      "https://api.spotify.com/v1/me/player/queue?uri=" +
+        encodeURIComponent(track_uri) +
+        "&device_id=" +
+        deviceID,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      },
+    );
+    // Return track name for further use
+    return track_name;
+  } else {
+    // If song title too short, get another song
+    return queueTrack(token, deviceID, playlist, playlistLength);
+  }
+}
+
 // Used for setting time in ms that interval will use
 const GameSpeed = Object.freeze({
   Play: 150,
@@ -58,7 +105,7 @@ export default function useRunJingleSnake(
   initFillSpots,
   initAvailabilityObject,
   token,
-  playlist
+  playlist,
 ) {
   // Set up state variables
   const [isPlaying, setIsPlaying] = useState(false);
@@ -134,7 +181,7 @@ export default function useRunJingleSnake(
         headers: {
           Authorization: "Bearer " + token,
         },
-      }
+      },
     )
       .then((result) => {
         if (!result.ok) {
@@ -150,53 +197,18 @@ export default function useRunJingleSnake(
 
   // Actions to initialize game start
   const startGame = useCallback(() => {
-    const offset = Math.floor(Math.random() * (playlistLength - 1));
     // Skip over next track
     player
       .nextTrack()
       .then(() => {
-        // Get random song to queue
-        return fetch(
-          "https://api.spotify.com/v1/playlists/" +
-            playlist +
-            "/tracks?fields=items.track%28uri%2Cname%29&limit=1&offset=" +
-            offset,
-          {
-            method: "GET",
-            headers: {
-              Authorization: "Bearer " + token,
-            },
-          }
-        );
+        return queueTrack(token, deviceID, playlist, playlistLength);
       })
-      .then((result) => {
-        // Check that getting song from playlist was successful
-        if (!result.ok) {
-          console.error("Could not get song from playlist");
-          return;
-        }
-        return result.json();
-      })
-      .then((data) => {
-        // Save information for songs to queue
-        const first_track_uri = data.items[0].track.uri;
-        const first_track_name = data.items[0].track.name;
-        // Write out song title to console for debugging
+      .then((first_track_name) => {
+        // Update next song title
+        setNextSongTitle(first_track_name);
+        // Print to console for debugging
         console.clear();
         console.log(first_track_name);
-        // Queue first song
-        fetch(
-          "https://api.spotify.com/v1/me/player/queue?uri=" +
-            encodeURIComponent(first_track_uri) +
-            "&device_id=" +
-            deviceID,
-          {
-            method: "POST",
-            headers: {
-              Authorization: "Bearer " + token,
-            },
-          }
-        );
         // Initialize score and initial song title
         setSongTitle(first_track_name);
         setNextSongTitle(null);
@@ -232,7 +244,7 @@ export default function useRunJingleSnake(
               headers: {
                 Authorization: "Bearer " + token,
               },
-            }
+            },
           );
         }, 15000);
       });
@@ -264,53 +276,18 @@ export default function useRunJingleSnake(
 
   // Controls what happens on each render of the running game
   const gameTick = useCallback(() => {
-    // Check that next song is queued
-    if (nextSongTitle === null) {
+    // Queue next song once two letters from current song have been guessed
+    if (nextSongTitle === null && nCharsCorrect > 1) {
       // Switch from null so that this doesn't run multiple times if rendering faster than API calls
       setNextSongTitle("in-progress");
-      const offset = Math.floor(Math.random() * (playlistLength - 1));
-      fetch(
-        "https://api.spotify.com/v1/playlists/" +
-          playlist +
-          "/tracks?fields=items.track%28uri%2Cname%29&limit=1&offset=" +
-          offset,
-        {
-          method: "GET",
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        }
-      )
-        .then((result) => {
-          // Check that getting song from playlist was successful
-          if (!result.ok) {
-            console.error("Could not get song from playlist");
-            return;
-          }
-          return result.json();
-        })
-        .then((data) => {
-          // Save information for song to queue
-          let track_uri = data.items[0].track.uri;
-          let track_name = data.items[0].track.name;
+      queueTrack(token, deviceID, playlist, playlistLength).then(
+        (track_name) => {
           // Update next song title
           setNextSongTitle(track_name);
           // Print to console for debugging
           console.log(track_name);
-          // Queue song
-          fetch(
-            "https://api.spotify.com/v1/me/player/queue?uri=" +
-              encodeURIComponent(track_uri) +
-              "&device_id=" +
-              deviceID,
-            {
-              method: "POST",
-              headers: {
-                Authorization: "Bearer " + token,
-              },
-            }
-          );
-        });
+        },
+      );
     }
     // Check state of title guessing
     if (nCharsCorrect >= songTitle.length) {
@@ -333,7 +310,7 @@ export default function useRunJingleSnake(
                 headers: {
                   Authorization: "Bearer " + token,
                 },
-              }
+              },
             );
           }, 15000);
         });
@@ -351,7 +328,7 @@ export default function useRunJingleSnake(
     const { next_event, next_row, next_col } = determineEventAtNextCell(
       board,
       snake,
-      moveDirection
+      moveDirection,
     );
     if (next_event === "move") {
       // Update game state
@@ -370,7 +347,7 @@ export default function useRunJingleSnake(
           songTitle,
           nCharsCorrect,
           nextSongTitle,
-          charsOnBoard
+          charsOnBoard,
         ));
       // Update game state
       dispatchBoardState({
