@@ -69,7 +69,7 @@ export default function MainPage() {
     initFillSpots,
     initAvailabilityObject,
     token,
-    playlist
+    playlist,
   );
 
   // Render page
@@ -79,6 +79,7 @@ export default function MainPage() {
       <>
         <Header>Jingle Snake</Header>
         <SpotifyLogin />
+        <Footer />
       </>
     );
   } else {
